@@ -1,0 +1,2 @@
+ngspice -r ngtest.raw -b ngtest.cki
+pip install fysom
