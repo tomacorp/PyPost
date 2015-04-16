@@ -4,14 +4,7 @@ from __future__ import unicode_literals
 from future_builtins import *
 
 import sys
-from math import *
-from tokenize import *
 from numpy import *
-
-import tokenize
-from cStringIO import StringIO
-import re
-import numpy as np
 from collections import deque
 
 # import numexpr as ne
@@ -23,20 +16,20 @@ from PyQt4.QtGui import (QApplication, QDialog, QLineEdit, QTextBrowser,
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-import ReadSpiceRaw
-import SpiceVarExpr
-import EngEvaluate
+import CommandInterp
 
 # TODO:
 #   Add variables and functions for constants and vectors
-#   Text area instead of text line for input
-#   Command line history
-#   Matplotlib window call
 #   hdf5 data import
 #   compiled scripts
-#   raw file import
-#   IPC port
+#   IPC port, web server
 #   Display controls
+
+# Need gr x .vs y
+# Need eval on Qtplot command in case it fails
+# Need to check Qtplot for x and y different dimensions in plot
+# Create a transcript file with command line history in it.
+# Create a transcript file with evaluated Python in it.
 
 # Consider:
 #  In [143]: import numexpr as ne
@@ -53,17 +46,13 @@ class Form(QDialog):
     super(Form, self).__init__(parent)
     self.resize(720, 320)
     self.browser = QTextBrowser()
-    self.history = QTextBrowser()
     self.sc      = MyStaticMplCanvas(self, width=2.5, height=2, dpi=100)
     self.lineedit = lineEditHist("Type an expression and press Enter")
-    # self.lineedit = QLineEdit("Type an expression and press Enter")
     self.lineedit.selectAll()
 
     self.topLayout = QHBoxLayout()
     self.topLayout.addWidget(self.browser)
-
     self.topLayout.addWidget(self.sc)
-    # self.topLayout.addWidget(self.history)
 
     layout = QVBoxLayout()
     layout.addLayout(self.topLayout)
@@ -73,55 +62,18 @@ class Form(QDialog):
     self.lineedit.setFocus()
     self.lineedit.returnPressed.connect(self.updateUi)
 
+    self.commandInterp= CommandInterp.CommandInterp()
+    self.commandInterp.setGraphicsDelegate(self.sc)
+
     self.setWindowTitle("Post Processor")
 
   def updateUi(self):
     cmdText = unicode(self.lineedit.text())
-    # Command history goes here
     self.lineedit.history.append('')
-    self.executeCmd(cmdText)
-
-  def executeCmd(self, cmdText):
-    _globals= globals()
-    evaluator= EngEvaluate.EngEvaluate(_globals)
-    sve= SpiceVarExpr.SpiceVarExpr()
-    print("Command: " + cmdText)
-    _globals= globals()
-    doneCommand= False
-
-    regexCi= re.match(r'^ci (.*)', cmdText)
-    if regexCi is not None:
-      rawFileName= regexCi.group(1)
-      rawReader= ReadSpiceRaw.spice_read(rawFileName)
-      rawReader.loadSpiceVoltages()
-      _globals['r']= rawReader
-      _globals['t']= r.t()
-      doneCommand= True
-
-    regexGr= re.match(r'^gr (.*)', cmdText)
-    if regexGr is not None:
-      plotExpr= regexGr.group(1)
-      print("Replot " + plotExpr)
-      res= arange(10)
-
-      plotExpr= sve.fixWaveFormVariableNames(plotExpr)
-
-      res, success= evaluator.runEval(cmdText, res, plotExpr)
-      if success:
-        self.sc.axes.plot(t,res)
-        self.sc.draw()
-      else:
-        print("Oopsie evaluating plot expression: " + cmdText)
-      doneCommand= True
-
-    if doneCommand == False:
-      cmdText= sve.fixWaveFormVariableNames(cmdText)
-      message= evaluator.evaluate(cmdText)
-
-      self.browser.append(message)
-      self.lineedit.clear()
-      self.lineedit.resetHistoryPosition()
-
+    message= self.commandInterp.executeCmd(cmdText)
+    self.browser.append(message)
+    self.lineedit.clear()
+    self.lineedit.resetHistoryPosition()
 
 class MyMplCanvas(FigureCanvas):
   """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""

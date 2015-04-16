@@ -147,7 +147,7 @@ class spice_read(object):
     self.spiceScale= {}
     if error:
       ## FIXME create an assertion
-      print "error in reading the file"
+      return error
 
   def set_default_values(self):
     ## Set the default values for some options

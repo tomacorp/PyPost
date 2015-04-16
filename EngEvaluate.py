@@ -8,7 +8,7 @@ import numpy as np
 
 class EngEvaluate():
   def __init__(self, _globals):
-    self.debug= True
+    self.debug= False
     self.unrecognizedEngrNotation= -999
     self._globals= _globals
     return;
