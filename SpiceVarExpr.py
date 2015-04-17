@@ -41,49 +41,58 @@ class SpiceVarExpr:
   # The state machine makes sure that the voltage or current expression follows the syntax.
   # If it doesn't, the machine backtracks and resets. 
   # The non-matching text passes through.  
+  
+  # Backtracking could be implemented with untokenize()
   def fixWaveFormVariableNames(self, txt):
     self.outExpr= ''
     lastToknum= 0
     g = generate_tokens(StringIO(txt).readline)
     
-    for toknum, tokval, _, _, _  in g:
-      
-      if self.fsm.current == "looking":
-        if toknum == NAME and (tokval == 'v' or tokval == 'i'):
-          self.fsm.seeWaveVar(msg=tokval)
-          continue
+    # Bug, if there is no ENDMARKER, and the tokenizer is messed up on say ) as input,
+    # it tries to get another token from g and crashes.
+    try:
+      for toknum, tokval, _, _, _  in g:
+        
+        if self.fsm.current == "looking":
+          if toknum == NAME and (tokval == 'v' or tokval == 'i'):
+            self.fsm.seeWaveVar(msg=tokval)
+            continue
+            
+        elif self.fsm.current == "openParen":
+          if toknum == OP and tokval == '(':
+            self.fsm.seeOpenParen(msg=tokval)
+            continue
+          else:
+            self.outExpr += self.waveType
+            self.fsm.reset()
           
-      elif self.fsm.current == "openParen":
-        if toknum == OP and tokval == '(':
-          self.fsm.seeOpenParen(msg=tokval)
-          continue
-        else:
-          self.outExpr += self.waveType
-          self.fsm.reset()
+        elif self.fsm.current == 'inWaveVar':
+          if toknum == NAME or toknum == NUMBER:
+            self.fsm.getWaveVar(msg=tokval)
+            continue
+          else:
+            self.outExpr += self.waveType + '('
+            self.fsm.reset()        
+         
+        elif self.fsm.current== 'closeParen': 
+          if toknum == OP and tokval == ')':
+            self.fsm.seeCloseParen(msg=tokval)
+            continue
+          else:
+            self.outExpr += self.waveType + '(' + self.waveName
+            self.fsm.reset()          
         
-      elif self.fsm.current == 'inWaveVar':
-        if toknum == NAME or toknum == NUMBER:
-          self.fsm.getWaveVar(msg=tokval)
-          continue
-        else:
-          self.outExpr += self.waveType + '('
-          self.fsm.reset()        
-       
-      elif self.fsm.current== 'closeParen': 
-        if toknum == OP and tokval == ')':
-          self.fsm.seeCloseParen(msg=tokval)
-          continue
-        else:
-          self.outExpr += self.waveType + '(' + self.waveName
-          self.fsm.reset()          
-      
-      self.outExpr += tokval  
-        
-      if toknum == ENDMARKER:
-        return self.outExpr
-      
-    print "Unexpected end of token parsing."
-    return txt
+        self.outExpr += tokval  
+          
+        if toknum == ENDMARKER:
+          return self.outExpr
+     
+      else:
+        print "Unexpected end of token parsing."
+        return txt
+    except:
+      print "Parsing failed"
+      return txt
 
 if __name__ == "__main__":
   
@@ -98,3 +107,8 @@ if __name__ == "__main__":
   outputExpression= sve.fixWaveFormVariableNames(inputExpression)
   print "Input: " + inputExpression
   print "Output: " + outputExpression
+  
+  inputExpression= ')'
+  outputExpression= sve.fixWaveFormVariableNames(inputExpression)
+  print "Input: " + inputExpression
+  print "Output: " + outputExpression  
