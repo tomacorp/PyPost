@@ -27,5 +27,6 @@
 *.ppm
 *.xbm
 *.xpm
+*.sqlite
 x
 restats

@@ -36,6 +36,9 @@ class EngEvaluate():
     message= self.displayResult(cmdText, varName, rhs, res, success)
     return message
 
+  def err_handler(self, type, flag):
+    print "Floating point error (%s), with flag %s" % (type, flag)
+
   def runEval(self, cmdText, varName, rhs):
     _globals= self._globals
     #if self.debug:
@@ -50,6 +53,9 @@ class EngEvaluate():
     except:
       print("Error: runEval at pyFromEng: " + rhs)
 
+    saved_handler = np.seterrcall(self.err_handler)
+    save_err = np.seterr(divide='call', over='call', under='call',
+                        invalid='call')
     try:
       result= eval(str(rhs), _globals, _globals)
       _globals[str(varName)]= result
@@ -57,6 +63,7 @@ class EngEvaluate():
     except:
       result= 0
       success= False
+    np.seterrcall(saved_handler)
     return result, success
 
   def displayResult(self, cmdText, varName, rhs, res, success):
@@ -105,18 +112,21 @@ class EngEvaluate():
     deEngExpr= ''
     lastToknum= 0
     g = generate_tokens(StringIO(txtEng).readline)
-    for toknum, tokval, _, _, _  in g:
-      if self.debug:
-        print('  ' + str(toknum) + ' ' + str(tokval))
-      if lastToknum == NUMBER and toknum == NAME:
-        engExp= self.nameTokenToExponent(tokval)
-        if engExp == self.unrecognizedEngrNotation:
-          print("Error: unexpected string at " + str(deEngExpr) + ": " + tokval)
+    try:
+      for toknum, tokval, _, _, _  in g:
+        if self.debug:
+          print('  ' + str(toknum) + ' ' + str(tokval))
+        if lastToknum == NUMBER and toknum == NAME:
+          engExp= self.nameTokenToExponent(tokval)
+          if engExp == self.unrecognizedEngrNotation:
+            print("Error: unexpected string at " + str(deEngExpr) + ": " + tokval)
+          else:
+            deEngExpr= deEngExpr + 'e' + str(engExp)
         else:
-          deEngExpr= deEngExpr + 'e' + str(engExp)
-      else:
-        deEngExpr= deEngExpr + tokval
-      lastToknum= toknum
+          deEngExpr= deEngExpr + tokval
+        lastToknum= toknum
+    except:
+      print "Could not parse " + txtEng
     if self.debug:
       print("Translated: " + deEngExpr)
     return deEngExpr
@@ -125,28 +135,34 @@ class EngEvaluate():
     deEngExpr= ''
     lastToknum= 0
     g = generate_tokens(StringIO(txt).readline)
-    for toknum, tokval, _, _, _  in g:
-      print(str(toknum) + ' ' + str(tokval))
+    try:
+      for toknum, tokval, _, _, _  in g:
+        print(str(toknum) + ' ' + str(tokval))
+    except:
+      print "Could not parse " + txtEng
 
   def pyFromVec(self, txt):
     pyExpr= ''
     lastToknum= 0
     invec= False
     g = generate_tokens(StringIO(txt).readline)
-    for toknum, tokval, _, _, _  in g:
-      if (toknum == OP and tokval == '['):
-        vec= 'np.array(['
-        invec= True
-      elif (invec and toknum == OP and tokval == ','):
-        vec= vec + lastToken + ','
-      elif (invec and toknum == OP and tokval == ']'):
-        invec= False
-        vec = vec + lastToken + '])'
-        pyExpr = pyExpr + vec
-      elif (invec):
-        lastToken= tokval
-      else:
-        pyExpr = pyExpr + tokval
+    try:
+      for toknum, tokval, _, _, _  in g:
+        if (toknum == OP and tokval == '['):
+          vec= 'np.array(['
+          invec= True
+        elif (invec and toknum == OP and tokval == ','):
+          vec= vec + lastToken + ','
+        elif (invec and toknum == OP and tokval == ']'):
+          invec= False
+          vec = vec + lastToken + '])'
+          pyExpr = pyExpr + vec
+        elif (invec):
+          lastToken= tokval
+        else:
+          pyExpr = pyExpr + tokval
+    except:
+      print "Could not parse " + txtEng
     if self.debug:
       print("Vector expr:" + str(pyExpr))
     return pyExpr

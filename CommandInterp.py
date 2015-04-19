@@ -12,7 +12,8 @@ class CommandInterp:
   def __init__(self):
     self._globals= globals()
     self.evaluator= EngEvaluate.EngEvaluate(self._globals)
-    self.sve= SpiceVarExpr.SpiceVarExpr()        
+    self.sve= SpiceVarExpr.SpiceVarExpr()
+    self.xvar= 't'
     return
 
   def executeCmd(self, cmdText):
@@ -46,10 +47,10 @@ class CommandInterp:
     #       2D plots with thermal solutions
     #       Add web server to inject remote commands via http
     #       gr 3
-    #         Can't get length of integer. 
+    #         Can't get length of integer.
     #         Needs to check that expr is an array, or better extend int to array.
 
-    regexCmd= re.match(r'^(ci|gr) (.*)', cmdText)
+    regexCmd= re.match(r'^(ci|gr|set) (.*)', cmdText)
     if regexCmd is not None:
       cmd= regexCmd.group(1)
       arg= regexCmd.group(2)
@@ -60,6 +61,7 @@ class CommandInterp:
         if rawReader is not None:
           rawReader.loadSpiceVoltages()
           self._globals['r']= rawReader
+          self.xvar= 't'
           self._globals['t']= r.t()
         else:
           message= "Could not read raw file " + rawFileName
@@ -73,14 +75,45 @@ class CommandInterp:
 
         res, success= self.evaluator.runEval(cmdText, res, plotExpr)
         if success:
-          if len(res) == len(t):
-            self.sc.axes.plot(t,res)
-            self.sc.draw()
+
+          typeXAxis= str(type(self._globals[self.xvar]))
+          if "<type 'numpy.ndarray'>" in typeXAxis:
+            xAxisPts= len(self._globals[self.xvar])
           else:
-            message = "Error: Number of X-axis points is " + str(len(t))
-            + " and expression has " + str(len(t)) + " points"                    
+            xAxisPts= 1
+
+          typeYAxis= str(type(res))
+          if "<type 'numpy.ndarray'>" in typeYAxis:
+            yAxisPts= len(res)
+          else:
+            yAxisPts= 1
+
+          if xAxisPts == yAxisPts:
+            self.sc.plt.plot(self._globals[self.xvar],res)
+            self.sc.plt.set_xlabel("X label")
+            self.sc.plt.set_ylabel("Y label")
+            self.sc.draw()
+            self.sc.show()
+          else:
+            plX= 'point' if xAxisPts == 1 else 'points'
+            plY= 'point' if yAxisPts == 1 else 'points'
+            message = "Error: X-axis has " + str(xAxisPts) + " " + plX + " and Y-axis has " + str(yAxisPts) + " " + plY
         else:
           message= "Error evaluating plot expression: " + cmdText
+
+      elif cmd == 'set':
+        regexSet= re.match(r'^(xname) (.*)', arg)
+        if regexCmd is not None:
+          setcmd= regexSet.group(1)
+          setarg= regexSet.group(2)
+          if setcmd == 'xname':
+            self.xvar = setarg
+            message = "Set x variable to " + str(self.xvar)
+          else:
+            message = "Unrecognized set command: " + setcmd
+        else:
+          message= "Unrecognized setting: " + arg
+
 
     else:
       cmdText= self.sve.fixWaveFormVariableNames(cmdText)

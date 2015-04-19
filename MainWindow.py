@@ -7,7 +7,6 @@ import sys
 from numpy import *
 from collections import deque
 
-# import numexpr as ne
 from PyQt4.QtCore import Qt
 from PyQt4.QtCore import pyqtSignal as Signal
 from PyQt4.QtGui import (QApplication, QDialog, QLineEdit, QTextBrowser,
@@ -17,13 +16,28 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 import CommandInterp
+import LineEditHist
 
 # TODO:
 #   Add variables and functions for constants and vectors
 #   hdf5 data import
 #   compiled scripts
-#   IPC port, web server
+#   HTTP/IPC port, web server
 #   Display controls
+#   Save/Recall entire state in database
+#   Program launch from file that contains state
+#   Graphical SVG output, esp useful over HTTP as web page
+
+#   gr somevector
+#     should plot the vector versus its index if the x-axis is otherwise undefined.
+#   Need a command to set the x-axis variable.
+#   gr somevector histo
+#     should draw a histogram
+#   gr scalar
+#     should draw a flat line horizontally across the screen at y-value of scalar
+#   ma scalar
+#     should draw a straight vertical line at x-value of scalar
+#   Could implement these with a base command that draws a straight line segment.
 
 # Need gr x .vs y
 # Need eval on Qtplot command in case it fails
@@ -47,7 +61,7 @@ class Form(QDialog):
     self.resize(720, 320)
     self.browser = QTextBrowser()
     self.sc      = MyStaticMplCanvas(self, width=2.5, height=2, dpi=100)
-    self.lineedit = lineEditHist("Type an expression and press Enter")
+    self.lineedit = LineEditHist.lineEditHist("Type an expression and press Enter")
     self.lineedit.selectAll()
 
     self.topLayout = QHBoxLayout()
@@ -65,11 +79,18 @@ class Form(QDialog):
     self.commandInterp= CommandInterp.CommandInterp()
     self.commandInterp.setGraphicsDelegate(self.sc)
 
-    self.setWindowTitle("Post Processor")
+    self.setWindowTitle("PyCalc")
+    self.show()
+    self.activateWindow()
+    self.raise_()
 
   def updateUi(self):
     cmdText = unicode(self.lineedit.text())
     self.lineedit.history.append('')
+
+    # Add command to database:
+    self.lineedit.addCommandToDB(cmdText)
+
     message= self.commandInterp.executeCmd(cmdText)
     self.browser.append(message)
     self.lineedit.clear()
@@ -79,9 +100,9 @@ class MyMplCanvas(FigureCanvas):
   """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
   def __init__(self, parent=None, width=5, height=4, dpi=100):
     fig = Figure(figsize=(width, height), dpi=dpi)
-    self.axes = fig.add_subplot(111)
+    self.plt = fig.add_subplot(111)
     # We want the axes cleared every time plot() is called
-    self.axes.hold(False)
+    self.plt.hold(False)
 
     self.compute_initial_figure()
 
@@ -101,42 +122,7 @@ class MyStaticMplCanvas(MyMplCanvas):
   def compute_initial_figure(self):
     t = arange(0.0, 3.0, 0.01)
     s = sin(2*pi*t)
-    self.axes.plot(t, s)
-
-class lineEditHist(QLineEdit):
-  def __init__(self, initialMessage):
-    self.history= deque([''])
-    self.historyPointer= -1
-    super(lineEditHist, self).__init__(initialMessage)
-
-  # FIXME: This loses the last character while editing the current line,
-  # then going back in history, and then back to the current line.
-  def keyPressEvent(self, evt):
-    key=evt.key()
-    if key == Qt.Key_Up:
-      self.historyUp()
-    elif key == Qt.Key_Down:
-      self.historyDown()
-    else:
-      self.history[-1] = unicode(self.text())
-    # print("Key pressed" + str(evt.key()))
-    return super(lineEditHist, self).keyPressEvent(evt)
-
-  def resetHistoryPosition(self):
-    self.historyPointer = -1
-
-  def historyUp(self):
-    if -self.historyPointer < len(self.history):
-      self.historyPointer -= 1
-      lastCommand= self.history[self.historyPointer]
-      self.setText(lastCommand)
-
-  def historyDown(self):
-    print("Down")
-    if self.historyPointer < -1:
-      self.historyPointer += 1
-      lastCommand= self.history[self.historyPointer]
-      self.setText(lastCommand)
+    self.plt.plot(t, s)
 
 if __name__ == "__main__":
   app = QApplication(sys.argv)

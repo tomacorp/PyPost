@@ -4,5 +4,9 @@
 # Wing IDE project file                                          #
 ##################################################################
 [project attributes]
-proj.file-list = [loc('MainWindow.py')]
+proj.file-list = [loc('CommandInterp.py'),
+                  loc('EngEvaluate.py'),
+                  loc('MainWindow.py'),
+                  loc('ReadSpiceRaw.py'),
+                  loc('SpiceVarExpr.py')]
 proj.file-type = 'shared'
