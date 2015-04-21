@@ -44,6 +44,7 @@ import LineEditHist
 # Need to check Qtplot for x and y different dimensions in plot
 # Create a transcript file with command line history in it.
 # Create a transcript file with evaluated Python in it.
+#   This will be the basis for script generation.
 
 # Consider:
 #  In [143]: import numexpr as ne
@@ -97,17 +98,21 @@ class Form(QDialog):
     self.lineedit.resetHistoryPosition()
 
 class MyMplCanvas(FigureCanvas):
-  """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
+  """A QWidget that implements Matplotlib"""
   def __init__(self, parent=None, width=5, height=4, dpi=100):
     fig = Figure(figsize=(width, height), dpi=dpi)
     self.plt = fig.add_subplot(111)
-    # We want the axes cleared every time plot() is called
-    self.plt.hold(False)
 
-    self.compute_initial_figure()
+    # We want the axes cleared every time plot() is called
+    # self.plt.hold(False)
+
+    # self.compute_initial_figure()
 
     FigureCanvas.__init__(self, fig)
+
     self.setParent(parent)
+
+    fig.tight_layout(pad=1.0, w_pad=1.0, h_pad=2.0)
 
     FigureCanvas.setSizePolicy(self,
                                QSizePolicy.Expanding,
@@ -118,11 +123,9 @@ class MyMplCanvas(FigureCanvas):
     pass
 
 class MyStaticMplCanvas(MyMplCanvas):
-  """Simple canvas with a sine plot."""
+  """ Empty plot """
   def compute_initial_figure(self):
-    t = arange(0.0, 3.0, 0.01)
-    s = sin(2*pi*t)
-    self.plt.plot(t, s)
+    pass
 
 if __name__ == "__main__":
   app = QApplication(sys.argv)

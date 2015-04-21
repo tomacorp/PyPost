@@ -2,6 +2,7 @@ import numpy
 import string
 import sys
 import re
+import os.path
 
 class spice_vector(object):
   """
@@ -74,13 +75,13 @@ class spice_plot(object):
     if data == None:
       self.data_vectors = []
     else:
-      self.data_vectors = data     
+      self.data_vectors = data
 
     self.set_attributes(**kwargs)
 
   def set_attributes(self, **kwargs):
     """
-    Set the attributes of a plot. 
+    Set the attributes of a plot.
     """
     for k,v in kwargs.items():
       if hasattr(self, k):
@@ -160,6 +161,8 @@ class spice_read(object):
     self.vectors = []
 
   def readfile(self,filename):
+    if not os.path.isfile(filename):
+      return
     f = open(filename, "rb")
     while (1):
       line = f.readline()
@@ -287,7 +290,7 @@ class spice_read(object):
     return self.plots
 
   def dumpSpiceData(self, rawfn):
-    print 'The file: "' + rawfn + '" contains the following plots:' 
+    print 'The file: "' + rawfn + '" contains the following plots:'
     for i,p in enumerate(spice_read(rawfn).get_plots()):
       print '  Plot', i, 'with the attributes'
       print '    Title: ' , p.title
@@ -310,14 +313,14 @@ class spice_read(object):
         v = d.get_data()
         print '      Vector-Length: ', len(v)
         print '      Vector-Type: ', v.dtype
-        print str(v)        
+        print str(v)
 
   def loadSpiceVoltages(self):
     # _globals= globals()
     for i,p in enumerate(self.get_plots()):
       s = p.get_scalevector()
       self.spiceScale = s.get_data()
-      
+
       for j,d in enumerate(p.get_datavectors()):
         v = d.get_data()
         voltageRE= re.match(r'v\(([^\)]+)\)', d.name)
@@ -329,14 +332,14 @@ class spice_read(object):
         currentRE= re.match(r'i\(([^\)]+)\)', d.name)
         if currentRE:
           varName= currentRE.group(1)
-          self.spiceCurrent[varName]= v       
-          
+          self.spiceCurrent[varName]= v
+
   def v(self, voltageName):
     return self.spiceVoltage[voltageName]
-  
+
   def i(self, currentName):
-    return self.spiceCurrent[currentName]    
-  
+    return self.spiceCurrent[currentName]
+
   def t(self):
     return self.spiceScale
 

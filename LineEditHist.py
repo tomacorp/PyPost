@@ -47,29 +47,28 @@ class lineEditHist(QLineEdit):
       self.historyPointer += 1
       lastCommand= self.history[self.historyPointer]
       self.setText(lastCommand)
-      
+
   def loadHistoryDB(self):
     sql = """SELECT cmd FROM CmdHistory ORDER BY rowid"""
     c = self.conn.cursor()
     for row in c.execute(sql):
       self.history.append(row[0])
-      
+
   def addCommandToDB(self, cmd):
-    print "Add command to db"
+    # print "Add command to db"
     sql= """INSERT INTO CmdHistory(cmd) VALUES(?)"""
     c = self.conn.cursor()
     c.execute(sql, (cmd,))
     self.conn.commit()
-    
+
   def createDBTables(self):
     sql= """CREATE TABLE IF NOT EXISTS "CmdHistory" ("cmd" TEXT);"""
-    
+
     c = self.conn.cursor()
     c.execute(sql)
-    
+
     sql= """CREATE TABLE IF NOT EXISTS "Version" (
     "version" INTEGER
     );"""
-    
-    c.execute(sql)    
-  
+
+    c.execute(sql)
