@@ -89,7 +89,7 @@ class Form(QDialog):
     cmdText = unicode(self.lineedit.text())
     self.lineedit.history.append('')
 
-    # Add command to database:
+    # Add command to database:d
     self.lineedit.addCommandToDB(cmdText)
 
     message= self.commandInterp.executeCmd(cmdText)
@@ -102,7 +102,6 @@ class MyMplCanvas(FigureCanvas):
   def __init__(self, parent=None, width=5, height=4, dpi=100):
     fig = Figure(figsize=(width, height), dpi=dpi)
     self.plt = fig.add_subplot(111)
-
     # We want the axes cleared every time plot() is called
     # self.plt.hold(False)
 
@@ -112,7 +111,7 @@ class MyMplCanvas(FigureCanvas):
 
     self.setParent(parent)
 
-    fig.tight_layout(pad=1.0, w_pad=1.0, h_pad=2.0)
+    fig.tight_layout(pad=1.5, w_pad=0.0, h_pad=0.0)
 
     FigureCanvas.setSizePolicy(self,
                                QSizePolicy.Expanding,

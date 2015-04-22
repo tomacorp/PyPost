@@ -1,3 +1,4 @@
+import os.path
 import PyQt4.QtCore
 from PyQt4.QtCore import QProcess, QObject, SIGNAL
 
@@ -5,6 +6,7 @@ from math import *
 from tokenize import *
 from numpy import *
 from numpy.fft import *
+
 import re
 import numpy as np
 
@@ -23,8 +25,8 @@ import SpiceVarExpr
 # set yl 0 10
 # set xl auto
 # set yl auto
-# label x-axis, y-axis, title, subtitle, time, date
-# ticks, etc.
+# label time, date
+# ticks, grid, number of divisions
 
 # TODO: Check for presence of raw data in r before substituting and graphing with v(v1)
 #       implement Python program output as transcript
@@ -52,9 +54,16 @@ class CommandInterp:
     self.evaluator= EngEvaluate.EngEvaluate(self._globals)
     self.sve= SpiceVarExpr.SpiceVarExpr()
     self.xvar= 't'
+    self.yauto= True
+    self.ylimlow= -16.0
+    self.ylimhigh= 16.0
+    self.xauto= True
+    self.xlimlow= 0.0
+    self.xlimhigh= 0.02
     self.rawFileName= ''
     self.spiceFileName= ''
     self.simulationBaseName= ''
+    self.title=''
     return
 
   def executeCmd(self, cmdText):
@@ -80,14 +89,31 @@ class CommandInterp:
         message= "No simulation specified"
       else:
         message= "Circuit is: " + self.simulationBaseName
+
     elif cmd == 'set':
-      message= "Parameters are: (dump not implemented yet!)"
+      message = self.showSettings()
+
     if cmd == 'si':
       if self.simulationBaseName != '':
         message= self.simulate('')
         self.readRawFile()
       else:
         message= "Circuit name has not been set yet"
+    return message
+
+  def showSettings(self):
+    message = "Parameters are:\n  Sweep variable: " + str(self.xvar)
+    message += "\n  Title: " + str(self.title)
+
+    xLimitsMessage= "auto"
+    if not self.xauto:
+      xLimitsMessage= str(self.xlimlow) + " " + str(self.xlimhigh)
+    message += "\n  X Limits: " + xLimitsMessage
+
+    yLimitsMessage= "auto"
+    if not self.yauto:
+      yLimitsMessage= str(self.ylimlow) + " " + str(self.ylimhigh)
+    message += "\n  Y Limits: " + yLimitsMessage
     return message
 
   def executeLongCommand(self, longCmd, cmdText):
@@ -109,12 +135,21 @@ class CommandInterp:
     elif cmd == 'set':
       self.setPostParameter(arg)
     return message
+  # TODO Need similar for isEng and also engineerToFloat(string) to convert engr notation to float
+
+  def isfloat(self, value):
+    try:
+      float(value)
+      return True
+    except ValueError:
+      return False
 
   def setCircuitName(self, arg):
-    if (arg != ''):
+    if (arg != ''):  # TODO Need similar for isEng and also engineerToFloat(string) to convert engr notation to float
       self.simulationBaseName= arg
       self.rawFileName= arg + ".raw"
       self.spiceFileName= arg + ".cki"
+      self.getTitleLine()
       message= "Circuit is set to: " + arg
     else:
       message= "Circuit name has not been set"
@@ -127,6 +162,13 @@ class CommandInterp:
       self._globals['r']= rawReader
       self.xvar= 't'
       self._globals['t']= r.t()
+
+  def getTitleLine(self):
+    if os.path.isfile(self.spiceFileName):
+      with open(self.spiceFileName, 'r') as f:
+        self.title = f.readline()
+        self.title = self.title.replace('\n', '')
+        self.title = self.title.replace('\r', '')
 
 # TODO: Move this to MainWindow so that the Qt calls aren't used here.
   def simulate(self, arg):
@@ -146,6 +188,8 @@ class CommandInterp:
     print "Finished simulating"
     self.readRawFile()
     print "Finished reading raw file"
+
+
 
   def graphExpr(self, arg, cmdText):
     plotExpr= arg
@@ -183,7 +227,17 @@ class CommandInterp:
           self.sc.plt.plot(self._globals[self.xvar],res)
           self.sc.plt.set_xlabel(self.xvar, fontsize=fsz)
           self.sc.plt.set_ylabel(arg, fontsize=fsz)
-          self.sc.plt.set_title('Title', fontsize=fsz)
+          self.sc.plt.set_title(self.title, fontsize=fsz)
+          if self.yauto:
+            self.sc.plt.set_autoscaley_on(True)
+          else:
+            self.sc.plt.set_autoscaley_on(False)
+            self.ylimlow, self.ylimhigh= self.sc.plt.set_ylim(self.ylimlow, self.ylimhigh)
+          if self.xauto:
+            self.sc.plt.set_autoscalex_on(True)
+          else:
+            self.sc.plt.set_autoscalex_on(False)
+            self.xlimlow, self.xlimhigh= self.sc.plt.set_xlim(self.xlimlow, self.xlimhigh)
           self.sc.draw()
           self.sc.show()
         else:
@@ -194,17 +248,40 @@ class CommandInterp:
       message= "Error evaluating plot expression: " + cmdText
 
   def setPostParameter(self, arg):
-    regexSet= re.match(r'^(xname) (.*)', arg)
+
+    regexSet= re.match(r'^(xname|title|xl|yl) (.*)', arg)
     if regexSet is not None:
       setcmd= regexSet.group(1)
       setarg= regexSet.group(2)
       if setcmd == 'xname':
         self.xvar = setarg
         message = "Set x variable to " + str(self.xvar)
+      elif setcmd == 'title':
+        self.title= setarg
+      elif setcmd == 'yl':
+        if str(setarg) == 'auto':
+          self.yauto = True
+        else:
+          self.yauto = False
+          regexRange= re.match(r'^\s*(\S+)\s+(\S+)', setarg)
+          if regexRange is not None and self.isfloat(regexRange.group(1)) and self.isfloat(regexRange.group(2)):
+            self.ylimlow= float(regexRange.group(1))
+            self.ylimhigh= float(regexRange.group(2))
+      elif setcmd == 'xl':
+        if str(setarg) == 'auto':
+          self.xauto = True
+        else:
+          self.xauto = False
+          regexRange= re.match(r'^\s*(\S+)\s+(\S+)', setarg)
+          if regexRange is not None and self.isfloat(regexRange.group(1)) and self.isfloat(regexRange.group(2)):
+            self.xlimlow= float(regexRange.group(1))
+            self.xlimhigh= float(regexRange.group(2))
       else:
         message = "Unrecognized set command: " + setcmd
     else:
       message= "Unrecognized setting: " + arg
+
+
 
   def setGraphicsDelegate(self, sc):
     self.sc= sc
