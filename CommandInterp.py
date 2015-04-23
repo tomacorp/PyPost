@@ -19,12 +19,10 @@ import SpiceVarExpr
 # push   go into raw file subcircuit
 # pop    exit subcircuit
 # gs     graph on same axes
+
 # set ylin
 # set ylog
-# set xl 0 10
-# set yl 0 10
-# set xl auto
-# set yl auto
+# set xl 1k 10k
 # label time, date
 # ticks, grid, number of divisions
 
@@ -67,6 +65,8 @@ class CommandInterp:
     return
 
   def executeCmd(self, cmdText):
+    cmdText=cmdText.rstrip()
+    cmdText=cmdText.lstrip()
     print("Command: " + cmdText)
     message= ''
     longCmd= re.match(r'^(ci|gr|gs|set|si) (.*)', cmdText)
@@ -135,7 +135,58 @@ class CommandInterp:
     elif cmd == 'set':
       self.setPostParameter(arg)
     return message
+
   # TODO Need similar for isEng and also engineerToFloat(string) to convert engr notation to float
+
+  def isEngrNumber(self, expression):
+    if self.isfloat(expression):
+      return True, float(expression)
+
+    m= re.search(r'a$', expression, flags=re.IGNORECASE)
+    if m is not None:
+      return self.floatifyEngr(m, expression, 1e-18)
+
+    m= re.search(r'f$', expression, flags=re.IGNORECASE)
+    if m is not None:
+      return self.floatifyEngr(m, expression, 1e-15)
+
+    m= re.search(r'p$', expression, flags=re.IGNORECASE)
+    if m is not None:
+      return self.floatifyEngr(m, expression, 1e-12)
+
+    m= re.search(r'n$', expression, flags=re.IGNORECASE)
+    if m is not None:
+      return self.floatifyEngr(m, expression, 1e-9)
+
+    m= re.search(r'u$', expression, flags=re.IGNORECASE)
+    if m is not None:
+      return self.floatifyEngr(m, expression, 1e-6)
+
+    m= re.search(r'm$', expression)
+    if m is not None:
+      return self.floatifyEngr(m, expression, 1e-3)
+
+    m= re.search(r'k$', expression, flags=re.IGNORECASE)
+    if m is not None:
+      return self.floatifyEngr(m, expression, 1e3)
+
+    m= re.search(r'meg$', expression, flags=re.IGNORECASE)
+    if m is not None:
+      return self.floatifyEngr(m, expression, 1e6)
+
+    m= re.search(r'M$', expression)
+    if m is not None:
+      return self.floatifyEngr(m, expression, 1e6)
+
+    m= re.search(r'G$', expression, flags=re.IGNORECASE)
+    if m is not None:
+      return self.floatifyEngr(m, expression, 1e9)
+
+    m= re.search(r'T$', expression, flags=re.IGNORECASE)
+    if m is not None:
+      return self.floatifyEngr(m, expression, 1e12)
+
+    return False, 0.0
 
   def isfloat(self, value):
     try:
@@ -143,6 +194,15 @@ class CommandInterp:
       return True
     except ValueError:
       return False
+
+  def floatifyEngr(self, m, expression, exponent):
+    if m is not None:
+      mantissa= expression[:m.start()]
+      if self.isfloat(mantissa):
+        value= float(mantissa) * exponent
+        return True, value
+      else:
+        return False, 0.0
 
   def setCircuitName(self, arg):
     if (arg != ''):  # TODO Need similar for isEng and also engineerToFloat(string) to convert engr notation to float
@@ -189,8 +249,6 @@ class CommandInterp:
     self.readRawFile()
     print "Finished reading raw file"
 
-
-
   def graphExpr(self, arg, cmdText):
     plotExpr= arg
     res= arange(10)
@@ -220,6 +278,7 @@ class CommandInterp:
         self.sc.plt.set_xlabel('Index', fontsize=fsz)
         self.sc.plt.set_ylabel(arg, fontsize=fsz)
         self.sc.plt.set_title('Title', fontsize=fsz)
+        self.setAutoscale()
         self.sc.draw()
         self.sc.show()
       else:
@@ -228,16 +287,7 @@ class CommandInterp:
           self.sc.plt.set_xlabel(self.xvar, fontsize=fsz)
           self.sc.plt.set_ylabel(arg, fontsize=fsz)
           self.sc.plt.set_title(self.title, fontsize=fsz)
-          if self.yauto:
-            self.sc.plt.set_autoscaley_on(True)
-          else:
-            self.sc.plt.set_autoscaley_on(False)
-            self.ylimlow, self.ylimhigh= self.sc.plt.set_ylim(self.ylimlow, self.ylimhigh)
-          if self.xauto:
-            self.sc.plt.set_autoscalex_on(True)
-          else:
-            self.sc.plt.set_autoscalex_on(False)
-            self.xlimlow, self.xlimhigh= self.sc.plt.set_xlim(self.xlimlow, self.xlimhigh)
+          self.setAutoscale()
           self.sc.draw()
           self.sc.show()
         else:
@@ -246,6 +296,18 @@ class CommandInterp:
           message = "Error: X-axis has " + str(xAxisPts) + " " + plX + " and Y-axis has " + str(yAxisPts) + " " + plY
     else:
       message= "Error evaluating plot expression: " + cmdText
+
+  def setAutoscale(self):
+    if self.yauto:
+      self.sc.plt.set_autoscaley_on(True)
+    else:
+      self.sc.plt.set_autoscaley_on(False)
+      self.ylimlow, self.ylimhigh= self.sc.plt.set_ylim(self.ylimlow, self.ylimhigh)
+    if self.xauto:
+      self.sc.plt.set_autoscalex_on(True)
+    else:
+      self.sc.plt.set_autoscalex_on(False)
+      self.xlimlow, self.xlimhigh= self.sc.plt.set_xlim(self.xlimlow, self.xlimhigh)
 
   def setPostParameter(self, arg):
 
@@ -264,18 +326,24 @@ class CommandInterp:
         else:
           self.yauto = False
           regexRange= re.match(r'^\s*(\S+)\s+(\S+)', setarg)
-          if regexRange is not None and self.isfloat(regexRange.group(1)) and self.isfloat(regexRange.group(2)):
-            self.ylimlow= float(regexRange.group(1))
-            self.ylimhigh= float(regexRange.group(2))
+          if regexRange is not None:
+            loflg, lo= self.isEngrNumber(regexRange.group(1))
+            hiflg, hi= self.isEngrNumber(regexRange.group(2))
+            if loflg and hiflg:
+              self.ylimlow= lo
+              self.ylimhigh= hi
       elif setcmd == 'xl':
         if str(setarg) == 'auto':
           self.xauto = True
         else:
           self.xauto = False
           regexRange= re.match(r'^\s*(\S+)\s+(\S+)', setarg)
-          if regexRange is not None and self.isfloat(regexRange.group(1)) and self.isfloat(regexRange.group(2)):
-            self.xlimlow= float(regexRange.group(1))
-            self.xlimhigh= float(regexRange.group(2))
+          if regexRange is not None:
+            loflg, lo= self.isEngrNumber(regexRange.group(1))
+            hiflg, hi= self.isEngrNumber(regexRange.group(2))
+            if loflg and hiflg:
+              self.xlimlow= lo
+              self.xlimhigh= hi
       else:
         message = "Unrecognized set command: " + setcmd
     else:
