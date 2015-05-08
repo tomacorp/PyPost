@@ -7,18 +7,38 @@ import sys
 from numpy import *
 from collections import deque
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtCore import pyqtSignal as Signal
-from PyQt4.QtGui import (QApplication, QDialog, QLineEdit, QTextBrowser,
-                         QVBoxLayout, QHBoxLayout, QKeySequence, QSizePolicy)
+from PySide import QtCore, QtGui
+from PySide.QtCore import Qt
+from PySide.QtCore import Signal
+from PySide.QtGui import (QApplication, QDialog, QLineEdit, QTextBrowser,
+                          QVBoxLayout, QHBoxLayout, QKeySequence, QSizePolicy)
 
+import matplotlib
+# matplotlib.use('Qt4Agg')
+matplotlib.rcParams['backend.qt4']='PySide'
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+
+# from twisted.application import reactors
 
 import CommandInterp
 import LineEditHist
 
+# conda install pyside
+# pip install fysom
+# conda remove pyqt
+
+# Project->Project Properties
+# Custom python: /Users/toma/Library/Enthought/Canopy_64bit/User/bin/python
+# Or: /Users/toma/python278i/bin/python
+# Or: /Users/toma/anaconda/bin/python
+
 # TODO:
+#   Add a 2-D plot function. Look at code from therm.py, incorporate this in an
+#     interactive way, both with png and hdf5 data.
+#
+#   Add markers. Markers need to support both 1D and 2D.
+#
 #   Add variables and functions for constants and vectors
 #   hdf5 data import
 #   compiled scripts
@@ -38,6 +58,11 @@ import LineEditHist
 #   ma scalar
 #     should draw a straight vertical line at x-value of scalar
 #   Could implement these with a base command that draws a straight line segment.
+
+# Make an installer for Windows with http://pythonhosted.org/PyInstaller/
+#
+# Might need http://winpython.github.io in addition or instead.
+# Or http://www.py2exe.org
 
 # Need gr x .vs y
 # Need eval on Qtplot command in case it fails
@@ -89,10 +114,11 @@ class Form(QDialog):
     cmdText = unicode(self.lineedit.text())
     self.lineedit.history.append('')
 
-    # Add command to database:d
-    self.lineedit.addCommandToDB(cmdText)
-
     message= self.commandInterp.executeCmd(cmdText)
+    pyCode= self.commandInterp.pyCode;
+    print("cmdText: " + cmdText + "\nPython code: " + str(pyCode))
+    self.lineedit.addCommandToDB(cmdText, pyCode)
+
     self.browser.append(message)
     self.lineedit.clear()
     self.lineedit.resetHistoryPosition()
@@ -109,7 +135,7 @@ class MyMplCanvas(FigureCanvas):
 
     FigureCanvas.__init__(self, fig)
 
-    self.setParent(parent)
+    # self.setParent(parent)
 
     fig.tight_layout(pad=1.5, w_pad=0.0, h_pad=0.0)
 
@@ -128,6 +154,7 @@ class MyStaticMplCanvas(MyMplCanvas):
 
 if __name__ == "__main__":
   app = QApplication(sys.argv)
+
   form = Form()
   form.show()
   app.exec_()

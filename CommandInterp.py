@@ -1,6 +1,6 @@
 import os.path
-import PyQt4.QtCore
-from PyQt4.QtCore import QProcess, QObject, SIGNAL
+import PySide.QtCore
+from PySide.QtCore import QProcess, QObject, SIGNAL
 
 from math import *
 from tokenize import *
@@ -13,6 +13,7 @@ import numpy as np
 import EngEvaluate
 import ReadSpiceRaw
 import SpiceVarExpr
+import h5py
 
 # di     show available vars from raw file
 # show   list user-assigned variables
@@ -26,13 +27,16 @@ import SpiceVarExpr
 # label time, date
 # ticks, grid, number of divisions
 
+# FIXME: cmdText: sum([-1,1,3,4])
+#        Python code: res=sum(np.array(np.array([1,1,3,4])))
+
 # TODO: Check for presence of raw data in r before substituting and graphing with v(v1)
+#       implement HDF5 file reader
 #       implement Python program output as transcript
 #       implement save-all as ascii
 #       implement restore-all as ascii
 #       save state from one run to the next
 #       reset state to default
-#       save command-line history across sessions
 #       implement gr x .vs y
 #       implement freq instead of time as an axis, vdb, idb, vm, im
 #       AC analysis - complex numbers from raw file
@@ -50,6 +54,7 @@ class CommandInterp:
   def __init__(self):
     self._globals= globals()
     self.evaluator= EngEvaluate.EngEvaluate(self._globals)
+    self.pyCode= ''
     self.sve= SpiceVarExpr.SpiceVarExpr()
     self.xvar= 't'
     self.yauto= True
@@ -62,6 +67,7 @@ class CommandInterp:
     self.spiceFileName= ''
     self.simulationBaseName= ''
     self.title=''
+
     return
 
   def executeCmd(self, cmdText):
@@ -69,8 +75,8 @@ class CommandInterp:
     cmdText=cmdText.lstrip()
     print("Command: " + cmdText)
     message= ''
-    longCmd= re.match(r'^(ci|gr|gs|set|si) (.*)', cmdText)
-    shortCmd= re.match(r'^(ci|gr|gs|set|si)', cmdText)
+    longCmd= re.match(r'^(ci|gr|gs|set|si|history|readh5) (.*)', cmdText)
+    shortCmd= re.match(r'^(ci|set|si|history)', cmdText)
     if longCmd is not None:
       message= self.executeLongCommand(longCmd, cmdText)
     elif shortCmd is not None:
@@ -78,7 +84,7 @@ class CommandInterp:
     else:
       cmdText= self.sve.fixWaveFormVariableNames(cmdText)
       message= self.evaluator.evaluate(cmdText)
-
+      self.pyCode= self.evaluator.logPyCode
     return message
 
   def executeShortCommand(self, shortCmd):
@@ -87,21 +93,29 @@ class CommandInterp:
     if cmd == 'ci':
       if self.simulationBaseName == '':
         message= "No simulation specified"
+        self.pyCode= ''
       else:
         message= "Circuit is: " + self.simulationBaseName
+        self.pyCode= "sim.setCircuitName(" + self.simulationBaseName + ")"
 
     elif cmd == 'set':
       message = self.showSettings()
 
-    if cmd == 'si':
+    elif cmd == 'si':
       if self.simulationBaseName != '':
+        self.pyCode= "sim.simulate()"
         message= self.simulate('')
         self.readRawFile()
       else:
         message= "Circuit name has not been set yet"
+
+    elif cmd == 'history':
+      print "History not implemented yet."
+
     return message
 
   def showSettings(self):
+    self.pyCode= ''
     message = "Parameters are:\n  Sweep variable: " + str(self.xvar)
     message += "\n  Title: " + str(self.title)
 
@@ -119,21 +133,46 @@ class CommandInterp:
   def executeLongCommand(self, longCmd, cmdText):
     cmd= longCmd.group(1)
     arg= longCmd.group(2)
+    self.pyCode= ''
     message= ''
     if cmd == 'si':
+      self.pyCode= "sim.setCircuitName(" + str(arg) + ")\nsim.simulate()"
       message= self.setCircuitName(arg)
       message= message + "\n" + self.simulate(arg)
     if cmd == 'ci':
+      self.pyCode= "sim.setCircuitName(" + str(arg) + ")"
       message= self.setCircuitName(arg)
       self.readRawFile()
     elif cmd == 'gr':
       self.sc.plt.hold(False)
-      self.graphExpr(arg, cmdText)
+      message= self.graphExpr(arg, cmdText)
+      if message == '':
+        self.pyCode= "graph.graph("+ self.evaluator.logPyCode + ")"
+      else:
+        print(message)
+        self.pyCode= "# " + message
     elif cmd == 'gs':
       self.sc.plt.hold(True)
-      self.graphExpr(arg, cmdText)
+      message= self.graphExpr(arg, cmdText)
+      if message == '':
+        self.pyCode= "graph.graphSameAxes("+ self.evaluator.logPyCode + ")"
+      else:
+        print(message)
+        self.pyCode= "# " + message
     elif cmd == 'set':
       self.setPostParameter(arg)
+      self.pyCode= "graph.set(" + arg + ")"
+    elif cmd == 'history':
+      print "History not implemented yet."
+    elif cmd == 'readh5':
+      print("Read hdf5 file: " + arg)
+      if os.path.isfile(arg):
+        self._globals['h']= h5py.File(arg, "r")
+        self.pyCode= 'h= h5py.File(' + arg + ', "r")'
+      else:
+        message= 'file "' + arg + '" not found'
+        print(message)
+        self.pyCode= "# " + message
     return message
 
   # TODO Need similar for isEng and also engineerToFloat(string) to convert engr notation to float
@@ -223,6 +262,12 @@ class CommandInterp:
       self.xvar= 't'
       self._globals['t']= r.t()
 
+  def readHDF5File(self):
+    hdf5Reader = ReadHDF5.hdf5_read(self.hdf5FileName)
+    if hdf5Reader is not None:
+      hdf5Reader.loadHDF5Data()
+      self._globals['h']= hdf5Reader
+
   def getTitleLine(self):
     if os.path.isfile(self.spiceFileName):
       with open(self.spiceFileName, 'r') as f:
@@ -251,58 +296,59 @@ class CommandInterp:
 
   def graphExpr(self, arg, cmdText):
     plotExpr= arg
-    res= arange(10)
+    res= None
     fsz= 12
+    message= ''
     plotExpr= self.sve.fixWaveFormVariableNames(plotExpr)
 
     res, success= self.evaluator.runEval(cmdText, res, plotExpr)
-    if success:
+    if not success:
+      return "Error evaluating plot expression: " + cmdText
 
-      if self.xvar in self._globals:
-        typeXAxis= str(type(self._globals[self.xvar]))
-        if "<type 'numpy.ndarray'>" in typeXAxis:
-          xAxisPts= len(self._globals[self.xvar])
-        else:
-          xAxisPts= 1
+    if self.xvar in self._globals:
+      typeXAxis= str(type(self._globals[self.xvar]))
+      if "<type 'numpy.ndarray'>" in typeXAxis:
+        xAxisPts= len(self._globals[self.xvar])
       else:
-        typeXAxis= None
+        xAxisPts= 1
+    else:
+      typeXAxis= None
 
-      typeYAxis= str(type(res))
-      if "<type 'numpy.ndarray'>" in typeYAxis:
-        yAxisPts= len(res)
-      else:
-        yAxisPts= 1
+    typeYAxis= str(type(res))
+    if "<type 'numpy.ndarray'>" in typeYAxis:
+      yAxisPts= len(res)
+    else:
+      yAxisPts= 1
 
-      if typeXAxis == None:
-        self.sc.plt.plot(res)
-        self.sc.plt.set_xlabel('Index', fontsize=fsz)
+    if typeXAxis == None:
+      self.sc.plt.plot(res)
+      self.sc.plt.set_xlabel('Index', fontsize=fsz)
+      self.sc.plt.set_ylabel(arg, fontsize=fsz)
+      self.sc.plt.set_title('Title', fontsize=fsz)
+      self.setAutoscale()
+      self.sc.draw()
+      self.sc.show()
+    else:
+      if xAxisPts == yAxisPts:
+        self.sc.plt.plot(self._globals[self.xvar],res)
+        self.sc.plt.set_xlabel(self.xvar, fontsize=fsz)
         self.sc.plt.set_ylabel(arg, fontsize=fsz)
-        self.sc.plt.set_title('Title', fontsize=fsz)
+        self.sc.plt.set_title(self.title, fontsize=fsz)
         self.setAutoscale()
         self.sc.draw()
         self.sc.show()
       else:
-        if xAxisPts == yAxisPts:
-          self.sc.plt.plot(self._globals[self.xvar],res)
-          self.sc.plt.set_xlabel(self.xvar, fontsize=fsz)
-          self.sc.plt.set_ylabel(arg, fontsize=fsz)
-          self.sc.plt.set_title(self.title, fontsize=fsz)
-          self.setAutoscale()
-          self.sc.draw()
-          self.sc.show()
-        else:
-          plX= 'point' if xAxisPts == 1 else 'points'
-          plY= 'point' if yAxisPts == 1 else 'points'
-          message = "Error: X-axis has " + str(xAxisPts) + " " + plX + " and Y-axis has " + str(yAxisPts) + " " + plY
-    else:
-      message= "Error evaluating plot expression: " + cmdText
+        plX= 'point' if xAxisPts == 1 else 'points'
+        plY= 'point' if yAxisPts == 1 else 'points'
+        message = "Error: X-axis has " + str(xAxisPts) + " " + plX + " and Y-axis has " + str(yAxisPts) + " " + plY
+    return message
 
   def setAutoscale(self):
     if self.yauto:
       self.sc.plt.set_autoscaley_on(True)
     else:
       self.sc.plt.set_autoscaley_on(False)
-      self.ylimlow, self.ylimhigh= self.sc.plt.set_ylim(self.ylimlow, self.ylimhigh)
+      self.ylimlow, self.ylimhigh= self.sc.plt.set_ylim(self.ylimlow, self.ylimhigh).d
     if self.xauto:
       self.sc.plt.set_autoscalex_on(True)
     else:

@@ -10,6 +10,7 @@ class EngEvaluate():
   def __init__(self, _globals):
     self.debug= False
     self.unrecognizedEngrNotation= -999
+    self.logPyCode= ''
     self._globals= _globals
     return;
 
@@ -17,20 +18,20 @@ class EngEvaluate():
   # such as 'import numexpr as ne'
   # Want these chunks of python code to just work.
   # The problem is that the whitespace is removed.
+
+  # This version returns a message that is printed about the return value
+  # of the evaluation. runEval() just does the eval and returns the result,
+  # which is used for graphing.
+
+  #
+  # FIXME: self.pyFromVec and pyFromEng are getting called twice, resulting in:
+  #   [] -> res=np.array(np.array([]))
+  #   cmdText: [][]
+  #   Python code: res=np.array(np.array([]))np.array(np.array([]))
+  #
   def evaluate(self, cmdText):
     if self.debug:
       self.pyTok(cmdText)
-
-    try:
-      cmdText= self.pyFromVec(cmdText)
-    except:
-      print("Oops in pyFromVec: " + cmdText)
-
-    try:
-      cmdText= self.pyFromEng(cmdText)
-    except:
-      print("Oops in pyFromEng: " + cmdText)
-
     varName, rhs= self.getAssignment(cmdText)
     res, success= self.runEval(cmdText, varName, rhs)
     message= self.displayResult(cmdText, varName, rhs, res, success)
@@ -43,6 +44,7 @@ class EngEvaluate():
     _globals= self._globals
     #if self.debug:
       #print("Assign:" + varName + " to rhs:" + rhs)
+    self.logPyCode= '# Error: ' + str(varName) + '=' + str(rhs)
     try:
       rhs= self.pyFromVec(rhs)
     except:
@@ -56,11 +58,18 @@ class EngEvaluate():
     saved_handler = np.seterrcall(self.err_handler)
     save_err = np.seterr(divide='call', over='call', under='call',
                         invalid='call')
+
+    if varName:
+      self.logPyCode= str(varName) + '=' + str(rhs)
+    else:
+      self.logPyCode= str(rhs)
+
     try:
       result= eval(str(rhs), _globals, _globals)
       _globals[str(varName)]= result
       success= True
     except:
+      self.logCommandRHS= '# Error: ' + self.logPyCode
       result= 0
       success= False
     np.seterrcall(saved_handler)
@@ -143,6 +152,7 @@ class EngEvaluate():
 
   def pyFromVec(self, txt):
     pyExpr= ''
+    lastToken= ''
     lastToknum= 0
     invec= False
     g = generate_tokens(StringIO(txt).readline)
@@ -153,12 +163,13 @@ class EngEvaluate():
           invec= True
         elif (invec and toknum == OP and tokval == ','):
           vec= vec + lastToken + ','
+          lastToken= ''
         elif (invec and toknum == OP and tokval == ']'):
           invec= False
           vec = vec + lastToken + '])'
           pyExpr = pyExpr + vec
         elif (invec):
-          lastToken= tokval
+          lastToken += str(tokval)
         else:
           pyExpr = pyExpr + tokval
     except:

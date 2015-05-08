@@ -316,7 +316,6 @@ class spice_read(object):
         print str(v)
 
   def loadSpiceVoltages(self):
-    # _globals= globals()
     for i,p in enumerate(self.get_plots()):
       s = p.get_scalevector()
       self.spiceScale = s.get_data()
@@ -326,8 +325,6 @@ class spice_read(object):
         voltageRE= re.match(r'v\(([^\)]+)\)', d.name)
         if voltageRE:
           varName= voltageRE.group(1)
-          # print d.name + ': ' + voltageRE.group(1) + str(v)
-          # _globals[varName]= v
           self.spiceVoltage[varName]= v
         currentRE= re.match(r'i\(([^\)]+)\)', d.name)
         if currentRE:

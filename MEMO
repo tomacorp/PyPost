@@ -1,2 +1,15 @@
 ngspice -r ngtest.raw -b ngtest.cki
 pip install fysom
+pip install cx_freeze
+
+Tried
+cxfreeze MainWindow.py --target-dir dist
+but this errored out 
+IOError: [Errno 2] No such file or directory: '/Users/toma/Library/Enthought/Canopy_64bit/User/lib/Python'
+
+There is a python in
+/Users/toma/Library/Enthought/Canopy_64bit/User/bin
+
+Put cx_freeze in other python:
+/Users/toma/python278i/bin
+pip install cx_Freeze
