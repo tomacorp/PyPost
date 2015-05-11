@@ -11,7 +11,8 @@ from PySide import QtCore, QtGui
 from PySide.QtCore import Qt
 from PySide.QtCore import Signal
 from PySide.QtGui import (QApplication, QDialog, QLineEdit, QTextBrowser,
-                          QVBoxLayout, QHBoxLayout, QKeySequence, QSizePolicy)
+                          QVBoxLayout, QHBoxLayout, QKeySequence, QSizePolicy,
+                          QToolBar, QMenuBar, QMenu, QAction, QMainWindow, QWidget)
 
 import matplotlib
 # matplotlib.use('Qt4Agg')
@@ -80,14 +81,124 @@ import LineEditHist
 # instead
 
 
-class Form(QDialog):
-
+class Post(QMainWindow):
   def __init__(self, parent=None):
-    super(Form, self).__init__(parent)
+    super(Post, self).__init__(parent)
+
+    self.table = Form(self)
+    self.setCentralWidget(self.table)
+
+    self.resize(1200, 420)
+    self.createActions()
+    self.createMenus()
+
+    self.setWindowTitle('PyPost')
+    self.statusBar().showMessage('Ready')
+
+  def newFile(self):
+    self.statusBar().showMessage("Invoked File|New")
+    print("Invoked File|New")
+
+  def open_(self):
+    self.statusBar().showMessage("Invoked File|Open")
+    print("Invoked File|Open")
+
+  def save(self):
+    self.statusBar().showMessage("Invoked File|Save")
+    print("Invoked File|Save")
+
+  def print_(self):
+    self.statusBar().showMessage("Invoked File|Print")
+    print("Invoked File|Print")
+
+  def about(self):
+    self.statusBar().showMessage("Invoked Help|About")
+    print("Invoked Help|About")
+    QtGui.QMessageBox.about(self, "About Menu",
+                            "The <b>Menu</b> example shows how to create menu-bar menus "
+                            "and context menus.")
+
+  def aboutQt(self):
+    self.infoLabel.setText("Invoked <b>Help|About Qt</b>")
+
+  def prev(self):
+    self.statusBar().showMessage("Invoked Command|Prev")
+    print("Invoked Command|Prev")
+
+  def next_(self):
+    self.statusBar().showMessage("Invoked Command|Next")
+    print("Invoked Command|Next")
+
+  def createMenus(self):
+    menubar= self.menuBar()
+
+    self.fileMenu = menubar.addMenu("File")
+    self.fileMenu.addAction(self.newAct)
+    self.fileMenu.addAction(self.openAct)
+    self.fileMenu.addAction(self.saveAct)
+    self.fileMenu.addSeparator()
+    self.fileMenu.addAction(self.printAct)
+
+    # FIXME: TODO: Looks like a bug in PySide:
+    # One of the next two lines needs to be present in order for the
+    # Help menu to show up.
+    # Also, there is an unexpected search box in the help.
+
+    self.fileMenu.addAction(self.aboutAct)
+    self.fileMenu.addAction(self.aboutQtAct)
+
+    self.cmdMenu = menubar.addMenu("Command")
+    self.cmdMenu.addAction(self.previousAct)
+    self.cmdMenu.addAction(self.nextAct)
+
+    self.helpMenu = menubar.addMenu("&Help")
+    self.helpMenu.addAction(self.aboutAct)
+    self.helpMenu.addAction(self.aboutQtAct)
+
+  def createActions(self):
+    self.newAct = QtGui.QAction("&New", self,
+                                shortcut=QtGui.QKeySequence.New,
+                                statusTip="Create a new file", triggered=self.newFile)
+
+    self.openAct = QtGui.QAction("&Open...", self,
+                                 shortcut=QtGui.QKeySequence.Open,
+                                 statusTip="Open an existing file", triggered=self.open_)
+
+    self.saveAct = QtGui.QAction("&Save", self,
+                                 shortcut=QtGui.QKeySequence.Save,
+                                 statusTip="Save the document to disk", triggered=self.save)
+
+    self.printAct = QtGui.QAction("&Print...", self,
+                                  shortcut=QtGui.QKeySequence.Print,
+                                  statusTip="Print the document", triggered=self.print_)
+
+    self.aboutAct = QtGui.QAction("About", self,
+                                  statusTip="About PyPost", triggered=self.about)
+
+    self.aboutQtAct = QtGui.QAction("About &Qt", self,
+                                    statusTip="Show the Qt library's About box",
+                                    triggered=self.aboutQt)
+    self.aboutQtAct.triggered.connect(QtGui.qApp.aboutQt)
+
+    self.previousAct = QtGui.QAction("Previous", self,
+                                     shortcut=QtGui.QKeySequence.NextChild,
+                                     statusTip="Previous Command", triggered=self.prev)
+
+    self.nextAct = QtGui.QAction("Next", self,
+                                     shortcut=QtGui.QKeySequence.PreviousChild,
+                                     statusTip="Next Command", triggered=self.next_)
+
+class Form(QWidget):
+
+  def __init__(self, mainWindow):
+    super(Form, self).__init__()
+
+    # self.mainWindow= mainWindow
     self.resize(720, 320)
     self.browser = QTextBrowser()
+
     self.sc      = MyStaticMplCanvas(self, width=2.5, height=2, dpi=100)
-    self.lineedit = LineEditHist.lineEditHist("Type an expression and press Enter")
+    self.lineedit = LineEditHist.lineEditHist("")
     self.lineedit.selectAll()
 
     self.topLayout = QHBoxLayout()
@@ -106,6 +217,7 @@ class Form(QDialog):
     self.commandInterp.setGraphicsDelegate(self.sc)
 
     self.setWindowTitle("PyCalc")
+
     self.show()
     self.activateWindow()
     self.raise_()
@@ -122,6 +234,8 @@ class Form(QDialog):
     self.browser.append(message)
     self.lineedit.clear()
     self.lineedit.resetHistoryPosition()
+
+    # self.mainWindow.statusBar().showMessage('Next')
 
 class MyMplCanvas(FigureCanvas):
   """A QWidget that implements Matplotlib"""
@@ -153,8 +267,16 @@ class MyStaticMplCanvas(MyMplCanvas):
     pass
 
 if __name__ == "__main__":
-  app = QApplication(sys.argv)
 
-  form = Form()
-  form.show()
-  app.exec_()
+  if (1 == 0):
+    app = QApplication(sys.argv)
+    form = Form()
+    # form.show()
+
+  else:
+    app = QApplication(sys.argv)
+
+    main = Post()
+    main.show()
+
+  sys.exit(app.exec_())
