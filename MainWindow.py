@@ -119,7 +119,7 @@ class Post(QMainWindow):
                                   "specializing in electronic and thermal simulations.")
 
   def aboutQt(self):
-    self.infoLabel.setText("Invoked <b>Help|About Qt</b>")
+    print("Invoked <b>Help|About Qt</b>")
 
   def prev(self):
     self.table.lineedit.historyUp()
