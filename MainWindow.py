@@ -112,22 +112,20 @@ class Post(QMainWindow):
     print("Invoked File|Print")
 
   def about(self):
-    self.statusBar().showMessage("Invoked Help|About")
-    print("Invoked Help|About")
-    QtGui.QMessageBox.about(self, "About Menu",
-                            "The <b>Menu</b> example shows how to create menu-bar menus "
-                            "and context menus.")
+    #self.statusBar().showMessage("Invoked Help|About")
+    #print("Invoked Help|About")
+    QtGui.QMessageBox.about(self, "About PyPost",
+                                  "<b>PyPost</b> is an interactive dataset visualizer " +
+                                  "specializing in electronic and thermal simulations.")
 
   def aboutQt(self):
     self.infoLabel.setText("Invoked <b>Help|About Qt</b>")
 
   def prev(self):
-    self.statusBar().showMessage("Invoked Command|Prev")
-    print("Invoked Command|Prev")
+    self.table.lineedit.historyUp()
 
   def next_(self):
-    self.statusBar().showMessage("Invoked Command|Next")
-    print("Invoked Command|Next")
+    self.table.lineedit.historyDown()
 
   def createMenus(self):
     menubar= self.menuBar()
@@ -143,6 +141,7 @@ class Post(QMainWindow):
     # One of the next two lines needs to be present in order for the
     # Help menu to show up.
     # Also, there is an unexpected search box in the help.
+    # It looks like there is some interference from OSX.
 
     self.fileMenu.addAction(self.aboutAct)
     self.fileMenu.addAction(self.aboutQtAct)
