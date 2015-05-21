@@ -116,7 +116,7 @@ class Post(QMainWindow):
     #print("Invoked Help|About")
     QtGui.QMessageBox.about(self, "About PyPost",
                                   "<b>PyPost</b> is an interactive dataset visualizer " +
-                                  "specializing in electronic and thermal simulations.")
+                                  "for electronic and thermal engineering.")
 
   def aboutQt(self):
     print("Invoked <b>Help|About Qt</b>")

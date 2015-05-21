@@ -75,8 +75,8 @@ class CommandInterp:
     cmdText=cmdText.lstrip()
     print("Command: " + cmdText)
     message= ''
-    longCmd= re.match(r'^(ci|gr|gs|set|si|history|readh5) (.*)', cmdText)
-    shortCmd= re.match(r'^(ci|set|si|history)', cmdText)
+    longCmd= re.match(r'^(ci|gr|gs|set|si|history|readh5|ma) (.*)', cmdText)
+    shortCmd= re.match(r'^(ci|set|si|history|ma)', cmdText)
     if longCmd is not None:
       message= self.executeLongCommand(longCmd, cmdText)
     elif shortCmd is not None:
@@ -111,6 +111,9 @@ class CommandInterp:
 
     elif cmd == 'history':
       print "History not implemented yet."
+
+    elif cmd == 'ma':
+      print("Turn on markers")
 
     return message
 
@@ -159,9 +162,14 @@ class CommandInterp:
       else:
         print(message)
         self.pyCode= "# " + message
+    elif cmd == 'ma':
+      if (arg == 'off'):
+        print("Turn off markers")
+      else:
+        print("Turn on markers, do something with " + str(arg))
     elif cmd == 'set':
       self.setPostParameter(arg)
-      self.pyCode= "graph.set(" + arg + ")"
+      # self.pyCode= "graph.set(" + arg + ")"
     elif cmd == 'history':
       print "History not implemented yet."
     elif cmd == 'readh5':
@@ -174,8 +182,6 @@ class CommandInterp:
         print(message)
         self.pyCode= "# " + message
     return message
-
-  # TODO Need similar for isEng and also engineerToFloat(string) to convert engr notation to float
 
   def isEngrNumber(self, expression):
     if self.isfloat(expression):
@@ -324,7 +330,7 @@ class CommandInterp:
       self.sc.plt.plot(res)
       self.sc.plt.set_xlabel('Index', fontsize=fsz)
       self.sc.plt.set_ylabel(arg, fontsize=fsz)
-      self.sc.plt.set_title('Title', fontsize=fsz)
+      self.sc.plt.set_title(self.title, fontsize=fsz)
       self.setAutoscale()
       self.sc.draw()
       self.sc.show()
@@ -348,7 +354,7 @@ class CommandInterp:
       self.sc.plt.set_autoscaley_on(True)
     else:
       self.sc.plt.set_autoscaley_on(False)
-      self.ylimlow, self.ylimhigh= self.sc.plt.set_ylim(self.ylimlow, self.ylimhigh).d
+      self.ylimlow, self.ylimhigh= self.sc.plt.set_ylim(self.ylimlow, self.ylimhigh)
     if self.xauto:
       self.sc.plt.set_autoscalex_on(True)
     else:
@@ -356,19 +362,21 @@ class CommandInterp:
       self.xlimlow, self.xlimhigh= self.sc.plt.set_xlim(self.xlimlow, self.xlimhigh)
 
   def setPostParameter(self, arg):
-
     regexSet= re.match(r'^(xname|title|xl|yl) (.*)', arg)
     if regexSet is not None:
       setcmd= regexSet.group(1)
       setarg= regexSet.group(2)
       if setcmd == 'xname':
         self.xvar = setarg
+        self.pyCode= 'graph.xname('+ self.xname + ')'
         message = "Set x variable to " + str(self.xvar)
       elif setcmd == 'title':
         self.title= setarg
+        self.pyCode= 'graph.title('+ self.title + ')'
       elif setcmd == 'yl':
         if str(setarg) == 'auto':
           self.yauto = True
+          self.pyCode = 'graph.ylimAuto()'
         else:
           self.yauto = False
           regexRange= re.match(r'^\s*(\S+)\s+(\S+)', setarg)
@@ -376,11 +384,20 @@ class CommandInterp:
             loflg, lo= self.isEngrNumber(regexRange.group(1))
             hiflg, hi= self.isEngrNumber(regexRange.group(2))
             if loflg and hiflg:
+              if (lo == hi):
+                lo= lo * 0.99
+                hi= lo * 1.01
+              if (lo > hi):
+                limtmp= lo
+                lo= hi
+                hi= limtmp
               self.ylimlow= lo
               self.ylimhigh= hi
+              self.pyCode = 'graph.ylim(' + str(lo) + ',' + str(hi) + ')'
       elif setcmd == 'xl':
         if str(setarg) == 'auto':
           self.xauto = True
+          self.pyCode = 'graph.xlimAuto()'
         else:
           self.xauto = False
           regexRange= re.match(r'^\s*(\S+)\s+(\S+)', setarg)
@@ -390,6 +407,17 @@ class CommandInterp:
             if loflg and hiflg:
               self.xlimlow= lo
               self.xlimhigh= hi
+            if loflg and hiflg:
+              if (lo == hi):
+                lo= lo * 0.99
+                hi= lo * 1.01
+              if (lo > hi):
+                limtmp= lo
+                lo= hi
+                hi= limtmp
+              self.xlimlow= lo
+              self.xlimhigh= hi
+              self.pyCode = 'graph.xlim(' + str(lo) + ',' + str(hi) + ')'
       else:
         message = "Unrecognized set command: " + setcmd
     else:
