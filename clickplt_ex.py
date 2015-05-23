@@ -66,14 +66,14 @@ class ClickPlot:
     def getSubPlotNr(self, event):
 
         """
-		Get the nr of the subplot that has been clicked
+        Get the nr of the subplot that has been clicked
 
-		Arguments:
-		event -- an event
+        Arguments:
+        event -- an event
 
-		Returns:
-		A number or None if no subplot has been clicked
-		"""
+        Returns:
+        A number or None if no subplot has been clicked
+        """
 
         i = 0
         axisNr = None

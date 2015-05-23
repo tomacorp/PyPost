@@ -9,11 +9,12 @@ from numpy.fft import *
 
 import re
 import numpy as np
+import h5py
 
 import EngEvaluate
 import ReadSpiceRaw
 import SpiceVarExpr
-import h5py
+import EngMarker
 
 # di     show available vars from raw file
 # show   list user-assigned variables
@@ -67,7 +68,6 @@ class CommandInterp:
     self.spiceFileName= ''
     self.simulationBaseName= ''
     self.title=''
-
     return
 
   def executeCmd(self, cmdText):
@@ -281,7 +281,7 @@ class CommandInterp:
         self.title = self.title.replace('\n', '')
         self.title = self.title.replace('\r', '')
 
-# TODO: Move this to MainWindow so that the Qt calls aren't used here.
+  # TODO: Move this to MainWindow so that the Qt calls aren't used here.
   def simulate(self, arg):
     if arg != '':
       self.setCircuitName(arg)
@@ -423,7 +423,6 @@ class CommandInterp:
     else:
       message= "Unrecognized setting: " + arg
 
-
-
   def setGraphicsDelegate(self, sc):
     self.sc= sc
+    self.marker= EngMarker.EngMarker(self.sc)
