@@ -15,7 +15,7 @@ import numpy as np
 #   Oscillator frequency
 #   Delay
 
-# Animated marker
+# Marker that follows mouse pointer
 
 class EngMarker:
   def __init__(self, canvas, _globals):
