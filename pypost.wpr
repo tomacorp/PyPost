@@ -6,6 +6,7 @@
 [project attributes]
 proj.file-list = [loc('CommandInterp.py'),
                   loc('EngEvaluate.py'),
+                  loc('EngMarker.py'),
                   loc('LineEditHist.py'),
                   loc('MainWindow.py'),
                   loc('ReadSpiceRaw.py'),

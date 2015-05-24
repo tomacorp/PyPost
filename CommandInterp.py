@@ -76,7 +76,7 @@ class CommandInterp:
     print("Command: " + cmdText)
     message= ''
     longCmd= re.match(r'^(ci|gr|gs|set|si|history|readh5|ma) (.*)', cmdText)
-    shortCmd= re.match(r'^(ci|set|si|history|ma)', cmdText)
+    shortCmd= re.match(r'^(ci|set|si|history|ma)$', cmdText)
     if longCmd is not None:
       message= self.executeLongCommand(longCmd, cmdText)
     elif shortCmd is not None:
@@ -100,6 +100,7 @@ class CommandInterp:
 
     elif cmd == 'set':
       message = self.showSettings()
+      self.pyCode= ''
 
     elif cmd == 'si':
       if self.simulationBaseName != '':
@@ -113,7 +114,12 @@ class CommandInterp:
       print "History not implemented yet."
 
     elif cmd == 'ma':
-      print("Turn on markers")
+      self.pyCode= ''
+      if (self.marker.markerX != None):
+        print("Last marker: " + str(self.marker.markerX) + ', ' + str(self.marker.markerY))
+        self.pyCode= "mkx=marker.markerX\nmky=marker.markerY"
+      else:
+        print("No marker")
 
     return message
 
@@ -328,7 +334,7 @@ class CommandInterp:
 
     if typeXAxis == None:
       self.sc.plt.plot(res)
-      self.sc.plt.set_xlabel('Index', fontsize=fsz)
+      self.sc.plt.set_xlabel('Index', fontsize=fsz,picker=5)
       self.sc.plt.set_ylabel(arg, fontsize=fsz)
       self.sc.plt.set_title(self.title, fontsize=fsz)
       self.setAutoscale()
@@ -336,7 +342,7 @@ class CommandInterp:
       self.sc.show()
     else:
       if xAxisPts == yAxisPts:
-        self.sc.plt.plot(self._globals[self.xvar],res)
+        self.sc.plt.plot(self._globals[self.xvar],res,picker=5)
         self.sc.plt.set_xlabel(self.xvar, fontsize=fsz)
         self.sc.plt.set_ylabel(arg, fontsize=fsz)
         self.sc.plt.set_title(self.title, fontsize=fsz)
@@ -425,4 +431,4 @@ class CommandInterp:
 
   def setGraphicsDelegate(self, sc):
     self.sc= sc
-    self.marker= EngMarker.EngMarker(self.sc)
+    self.marker= EngMarker.EngMarker(self.sc, self._globals)

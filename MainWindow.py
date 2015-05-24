@@ -15,7 +15,6 @@ from PySide.QtGui import (QApplication, QDialog, QLineEdit, QTextBrowser,
                           QToolBar, QMenuBar, QMenu, QAction, QMainWindow, QWidget)
 
 import matplotlib
-# matplotlib.use('Qt4Agg')
 matplotlib.rcParams['backend.qt4']='PySide'
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -64,6 +63,10 @@ import LineEditHist
 #
 # Might need http://winpython.github.io in addition or instead.
 # Or http://www.py2exe.org
+
+# Plotting
+# http://www.jeffreytratner.com/example-pandas-docs/series-str-2013-10-6/visualization.html
+# http://www.physics.ucdavis.edu/~dwittman/Matplotlib-examples/
 
 # Need gr x .vs y
 # Need eval on Qtplot command in case it fails
@@ -267,15 +270,9 @@ class MyStaticMplCanvas(MyMplCanvas):
 
 if __name__ == "__main__":
 
-  if (1 == 0):
-    app = QApplication(sys.argv)
-    form = Form()
-    # form.show()
+  app = QApplication(sys.argv)
 
-  else:
-    app = QApplication(sys.argv)
-
-    main = Post()
-    main.show()
+  main = Post()
+  main.show()
 
   sys.exit(app.exec_())
