@@ -1,18 +1,44 @@
 
 import numpy as np
 
+# This is a controller that translates mouse events into actions
+# for markers, zoom, and scrolling.
+
+# TODO: Use engineering notation for marker annotation
+# Add other provisions for measurements
+#   Risetime
+#   Overshoot
+#   3dB bandwidth of bandpass
+#   3dB bandwidth of lowpass
+#   Shape factor
+#   Ringing frequency
+#   Oscillator frequency
+#   Delay
+
+# Animated marker
+
 class EngMarker:
   def __init__(self, canvas, _globals):
     self.sc = canvas
-    self.sc.mpl_connect('axes_enter_event', self.inAxis)
-    self.sc.mpl_connect('axes_leave_event', self.outAxis)
-    self.sc.mpl_connect('figure_enter_event', self.inFigure)
-    self.sc.mpl_connect('figure_leave_event', self.outFigure)
+
+    # Results pass back in the CommandInterpreter's global space
+    # so that the results can be used in scripts and formulas.
+    self._globals= _globals;
+    self._globals['markerX']= None
+    self._globals['markerY']= None
+    self._globals['deltaMarkerX']= None
+    self._globals['deltaMarkerY']= None
+
+    self.sc.mpl_connect('axes_enter_event', self.inGraphingArea)
+    self.sc.mpl_connect('axes_leave_event', self.outGraphingArea)
+    self.sc.mpl_connect('figure_enter_event', self.inGraphingMargin)
+    self.sc.mpl_connect('figure_leave_event', self.outGraphingMargin)
+
     self.fig = self.sc.figure
     self.retVal= {}
-    self.markerX= None
-    self.markerY= None
-    self._globals= _globals;
+    #self.markerX= None
+    #self.markerY= None
+
     self.pickpoints= None
     self.pickline= None
     self.pick_event_id= None
@@ -20,40 +46,46 @@ class EngMarker:
     self.scroll_event_id= None
     self.figure_scroll_event_id= None
 
-  def inAxis(self, event):
+  def inGraphingArea(self, event):
     self.pick_event_id= self.sc.mpl_connect('pick_event', self.onPick)
     self.button_press_event_id= self.sc.mpl_connect('button_press_event', self.onClick)
     self.scroll_event_id= self.sc.mpl_connect('scroll_event', self.onScroll)
     self.sc.mpl_disconnect(self.figure_scroll_event_id)
 
-  def outAxis(self, event):
+  def outGraphingArea(self, event):
     self.sc.mpl_disconnect(self.pick_event_id)
     self.sc.mpl_disconnect(self.button_press_event_id)
     self.sc.mpl_disconnect(self.scroll_event_id)
     self.figure_scroll_event_id= self.sc.mpl_connect('scroll_event', self.onFigureScroll)
-    # print("inFigure")
 
-  def inFigure(self, event):
+  def inGraphingMargin(self, event):
     self.figure_scroll_event_id= self.sc.mpl_connect('scroll_event', self.onFigureScroll)
-    # print("inFigure")
 
-  def outFigure(self, event):
+  def outGraphingMargin(self, event):
     self.sc.mpl_disconnect(self.figure_scroll_event_id)
-    # print("outFigure")
 
   def onFigureScroll(self, event):
-    yr= event.y/self.sc.height()
-    # print("onFigure scroll " + str(yr))
+    """
+    The Y axis is scrolled on the margin outside the graph area.
+    The top and bottom areas cause graph panning.
+    The middle areas on the sides cause zooming.
+    """
+    yratio= event.y/self.sc.height()
     if (abs(event.step) > 0):
-      if yr < 0.2:
+      if yratio < 0.2:
         self.sc.plt.yaxis.pan(event.step)
-      elif yr > 0.8:
+      elif yratio > 0.8:
         self.sc.plt.yaxis.pan(event.step)
       else:
         self.sc.plt.yaxis.zoom(event.step)
       self.fig.canvas.draw()
 
   def onScroll(self, event):
+    """
+    This X axis is scrolled on the graph.
+    Scroll commands on the left and right side of the graph cause panning.
+    Scroll commands on the center of the graph cause zooming.
+    """
     x= event.xdata
     y= event.ydata
     xbound= self.sc.plt.get_xbound()
@@ -62,23 +94,19 @@ class EngMarker:
       return None
     if (xbound[0] == xbound[1] or ybound[0] == ybound[1]):
       return None
-    xr= abs((x-xbound[0])/(xbound[1] - xbound[0]))
-    yr= abs((y-ybound[0])/(ybound[1] - ybound[0]))
-    # print("x: "+ str(x) + "y: " + str(y))
-    # print("xr: " + str(xr) + ' yr: ' + str(yr))
+    xratio= abs((x-xbound[0])/(xbound[1] - xbound[0]))
+    # yr= abs((y-ybound[0])/(ybound[1] - ybound[0]))
     if (event.step > 0):
-      # print("Zoom in from " + str(xr) + ", " + str(yr))
-      if (xr < 0.25):
+      if (xratio < 0.25):
         self.sc.plt.xaxis.pan(-1)
-      elif (xr > 0.75):
+      elif (xratio > 0.75):
         self.sc.plt.xaxis.pan(1)
       else:
         self.sc.plt.xaxis.zoom(1)
     elif (event.step < 0):
-      # print("Zoom out from " + str(xr) + ", " + str(yr))
-      if (xr < 0.25):
+      if (xratio < 0.25):
         self.sc.plt.xaxis.pan(1)
-      elif (xr > 0.75):
+      elif (xratio > 0.75):
         self.sc.plt.xaxis.pan(-1)
       else:
         self.sc.plt.xaxis.zoom(-1)
@@ -86,6 +114,12 @@ class EngMarker:
     return None
 
   def onPick(self, event):
+    """
+    The pick event causes a selection of nearby points to be selected.
+    However, the exact location of the pick is not known.
+    The onClick method is used to find the exact location, and the closest
+    point is chosen from the list provided by onPick()
+    """
     pickline = event.artist
     pickLineData = pickline.get_xydata()
     self.pickpoints= pickLineData[event.ind]
@@ -108,8 +142,12 @@ class EngMarker:
       print("Snap to " + str(x) + ', ' + str(y))
       l= self.sc.plt.axvline(x=event.xdata, linewidth=1, color='b')
       self.fig.canvas.draw()
-      self.markerX= x
-      self.markerY= y
+      #self.markerX= x
+      #self.markerY= y
+      if self._globals['markerX'] is not None:
+        self._globals['deltaMarkerX']= x - self._globals['markerX']
+      if self._globals['markerY'] is not None:
+        self._globals['deltaMarkerY']= y - self._globals['markerY']
       self._globals['markerX']= x
       self._globals['markerY']= y
       self.pickpoints= None

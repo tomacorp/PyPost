@@ -75,8 +75,8 @@ class CommandInterp:
     cmdText=cmdText.lstrip()
     print("Command: " + cmdText)
     message= ''
-    longCmd= re.match(r'^(ci|gr|gs|set|si|history|readh5|ma) (.*)', cmdText)
-    shortCmd= re.match(r'^(ci|set|si|history|ma)$', cmdText)
+    longCmd= re.match(r'^(ci|gr|gs|set|si|history|readh5) (.*)', cmdText)
+    shortCmd= re.match(r'^(ci|set|si|history)$', cmdText)
     if longCmd is not None:
       message= self.executeLongCommand(longCmd, cmdText)
     elif shortCmd is not None:
@@ -112,14 +112,6 @@ class CommandInterp:
 
     elif cmd == 'history':
       print "History not implemented yet."
-
-    elif cmd == 'ma':
-      self.pyCode= ''
-      if (self.marker.markerX != None):
-        print("Last marker: " + str(self.marker.markerX) + ', ' + str(self.marker.markerY))
-        self.pyCode= "mkx=marker.markerX\nmky=marker.markerY"
-      else:
-        print("No marker")
 
     return message
 
@@ -168,11 +160,6 @@ class CommandInterp:
       else:
         print(message)
         self.pyCode= "# " + message
-    elif cmd == 'ma':
-      if (arg == 'off'):
-        print("Turn off markers")
-      else:
-        print("Turn on markers, do something with " + str(arg))
     elif cmd == 'set':
       self.setPostParameter(arg)
       # self.pyCode= "graph.set(" + arg + ")"
