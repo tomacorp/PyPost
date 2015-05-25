@@ -23,6 +23,7 @@ from matplotlib.figure import Figure
 
 import CommandInterp
 import LineEditHist
+import EngMplCanvas
 
 # conda install pyside
 # pip install fysom
@@ -199,7 +200,7 @@ class Form(QWidget):
     self.resize(720, 320)
     self.browser = QTextBrowser()
 
-    self.sc      = MyStaticMplCanvas(self, width=2.5, height=2, dpi=100)
+    self.sc = EngMplCanvas.EngMplCanvas(self, width=2.5, height=2, dpi=100)
     self.lineedit = LineEditHist.lineEditHist("")
     self.lineedit.selectAll()
 
@@ -215,8 +216,15 @@ class Form(QWidget):
     self.lineedit.setFocus()
     self.lineedit.returnPressed.connect(self.updateUi)
 
+    # TODO: Make the globals coming from the markers to the interpreter
+    # go through here, so that the markers call a function up here that
+    # in turn pushed the data back down to the interpreter.
+    # Could also force the controller commands from CommandInterp to
+    # come back up here and then back down into the graphics view.
+
     self.commandInterp= CommandInterp.CommandInterp()
     self.commandInterp.setGraphicsDelegate(self.sc)
+    self.sc.setCommandDelegate(self.commandInterp)
 
     self.setWindowTitle("PyCalc")
 
@@ -238,35 +246,6 @@ class Form(QWidget):
     self.lineedit.resetHistoryPosition()
 
     # self.mainWindow.statusBar().showMessage('Next')
-
-class MyMplCanvas(FigureCanvas):
-  """A QWidget that implements Matplotlib"""
-  def __init__(self, parent=None, width=5, height=4, dpi=100):
-    fig = Figure(figsize=(width, height), dpi=dpi)
-    self.plt = fig.add_subplot(111)
-    # We want the axes cleared every time plot() is called
-    # self.plt.hold(False)
-
-    # self.compute_initial_figure()
-
-    FigureCanvas.__init__(self, fig)
-
-    # self.setParent(parent)
-
-    fig.tight_layout(pad=1.5, w_pad=0.0, h_pad=0.0)
-
-    FigureCanvas.setSizePolicy(self,
-                               QSizePolicy.Expanding,
-                               QSizePolicy.Expanding)
-    FigureCanvas.updateGeometry(self)
-
-  def compute_initial_figure(self):
-    pass
-
-class MyStaticMplCanvas(MyMplCanvas):
-  """ Empty plot """
-  def compute_initial_figure(self):
-    pass
 
 if __name__ == "__main__":
 

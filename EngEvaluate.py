@@ -19,16 +19,6 @@ class EngEvaluate():
   # Want these chunks of python code to just work.
   # The problem is that the whitespace is removed.
 
-  # This version returns a message that is printed about the return value
-  # of the evaluation. runEval() just does the eval and returns the result,
-  # which is used for graphing.
-
-  #
-  # FIXME: self.pyFromVec and pyFromEng are getting called twice, resulting in:
-  #   [] -> res=np.array(np.array([]))
-  #   cmdText: [][]
-  #   Python code: res=np.array(np.array([]))np.array(np.array([]))
-  #
   def evaluate(self, cmdText):
     if self.debug:
       self.pyTok(cmdText)
@@ -41,9 +31,11 @@ class EngEvaluate():
     print "Floating point error (%s), with flag %s" % (type, flag)
 
   def runEval(self, cmdText, varName, rhs):
+    """runEval() does the eval and returns the result,
+       which is used for graphing."""
+
     _globals= self._globals
-    #if self.debug:
-      #print("Assign:" + varName + " to rhs:" + rhs)
+
     self.logPyCode= '# Error: ' + str(varName) + '=' + str(rhs)
     try:
       rhs= self.pyFromVec(rhs)

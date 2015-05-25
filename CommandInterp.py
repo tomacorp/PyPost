@@ -28,9 +28,6 @@ import EngMarker
 # label time, date
 # ticks, grid, number of divisions
 
-# FIXME: cmdText: sum([-1,1,3,4])
-#        Python code: res=sum(np.array(np.array([1,1,3,4])))
-
 # TODO: Check for presence of raw data in r before substituting and graphing with v(v1)
 #       implement HDF5 file reader
 #       implement Python program output as transcript
@@ -320,39 +317,15 @@ class CommandInterp:
       yAxisPts= 1
 
     if typeXAxis == None:
-      self.sc.plt.plot(res)
-      self.sc.plt.set_xlabel('Index', fontsize=fsz,picker=5)
-      self.sc.plt.set_ylabel(arg, fontsize=fsz)
-      self.sc.plt.set_title(self.title, fontsize=fsz)
-      self.setAutoscale()
-      self.sc.draw()
-      self.sc.show()
+      self.sc.plotYList(res, arg, self.title)
     else:
       if xAxisPts == yAxisPts:
-        self.sc.plt.plot(self._globals[self.xvar],res,picker=5)
-        self.sc.plt.set_xlabel(self.xvar, fontsize=fsz)
-        self.sc.plt.set_ylabel(arg, fontsize=fsz)
-        self.sc.plt.set_title(self.title, fontsize=fsz)
-        self.setAutoscale()
-        self.sc.draw()
-        self.sc.show()
+        self.sc.plotXYList(self._globals[self.xvar], res, self.xvar, arg, self.title)
       else:
         plX= 'point' if xAxisPts == 1 else 'points'
         plY= 'point' if yAxisPts == 1 else 'points'
         message = "Error: X-axis has " + str(xAxisPts) + " " + plX + " and Y-axis has " + str(yAxisPts) + " " + plY
     return message
-
-  def setAutoscale(self):
-    if self.yauto:
-      self.sc.plt.set_autoscaley_on(True)
-    else:
-      self.sc.plt.set_autoscaley_on(False)
-      self.ylimlow, self.ylimhigh= self.sc.plt.set_ylim(self.ylimlow, self.ylimhigh)
-    if self.xauto:
-      self.sc.plt.set_autoscalex_on(True)
-    else:
-      self.sc.plt.set_autoscalex_on(False)
-      self.xlimlow, self.xlimhigh= self.sc.plt.set_xlim(self.xlimlow, self.xlimhigh)
 
   def setPostParameter(self, arg):
     regexSet= re.match(r'^(xname|title|xl|yl) (.*)', arg)
@@ -418,4 +391,39 @@ class CommandInterp:
 
   def setGraphicsDelegate(self, sc):
     self.sc= sc
-    self.marker= EngMarker.EngMarker(self.sc, self._globals)
+    # The graphics canvas send back data from markers in the form of globals.
+    self.sc._globals= self._globals
+    self.marker= EngMarker.EngMarker(self.sc)
+
+  # Marker delegate protocol implementation:
+  def setMarkerDelegate(self, obj):
+    self.markerDelegate= obj
+
+  def set_markerX(self, val):
+    self._globals['markerX']= val
+
+  def set_markerY(self, val):
+    self._globals['markerY']= val
+
+  def set_deltaMarkerX(self, val):
+    self._globals['deltaMarkerX']= val
+
+  def set_deltaMarkerY(self, val):
+    self._globals['deltaMarkerY']= val
+
+  def get_markerX(self):
+    if 'markerX' in self._globals.keys():
+      return self._globals['markerX']
+    else:
+      return None;
+
+  def get_markerY(self):
+    if 'markerY' in self._globals.keys():
+      return self._globals['markerY']
+    else:
+      return None;
+
+  # Graphics limit delegate protocol implementation:
+  def set_xlimitlow(self, val):
+    self.xlimlow= val
+    #  ... More methods ...

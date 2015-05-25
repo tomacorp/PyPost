@@ -5,29 +5,20 @@ import numpy as np
 # for markers, zoom, and scrolling.
 
 # TODO: Use engineering notation for marker annotation
-# Add other provisions for measurements
-#   Risetime
-#   Overshoot
-#   3dB bandwidth of bandpass
-#   3dB bandwidth of lowpass
-#   Shape factor
-#   Ringing frequency
-#   Oscillator frequency
-#   Delay
-
-# Marker that follows mouse pointer
+# TODO: Add more measurements
+#         Risetime
+#         Overshoot
+#         3dB bandwidth of bandpass
+#         3dB bandwidth of lowpass
+#         Shape factor
+#         Ringing frequency
+#         Oscillator frequency
+#         Delay
+# TODO: Marker that follows mouse pointer
 
 class EngMarker:
-  def __init__(self, canvas, _globals):
+  def __init__(self, canvas):
     self.sc = canvas
-
-    # Results pass back in the CommandInterpreter's global space
-    # so that the results can be used in scripts and formulas.
-    self._globals= _globals;
-    self._globals['markerX']= None
-    self._globals['markerY']= None
-    self._globals['deltaMarkerX']= None
-    self._globals['deltaMarkerY']= None
 
     self.sc.mpl_connect('axes_enter_event', self.inGraphingArea)
     self.sc.mpl_connect('axes_leave_event', self.outGraphingArea)
@@ -38,6 +29,8 @@ class EngMarker:
     self.retVal= {}
     #self.markerX= None
     #self.markerY= None
+
+    self.markerDelegate= None
 
     self.pickpoints= None
     self.pickline= None
@@ -142,14 +135,12 @@ class EngMarker:
       print("Snap to " + str(x) + ', ' + str(y))
       l= self.sc.plt.axvline(x=event.xdata, linewidth=1, color='b')
       self.fig.canvas.draw()
-      #self.markerX= x
-      #self.markerY= y
-      if self._globals['markerX'] is not None:
-        self._globals['deltaMarkerX']= x - self._globals['markerX']
-      if self._globals['markerY'] is not None:
-        self._globals['deltaMarkerY']= y - self._globals['markerY']
-      self._globals['markerX']= x
-      self._globals['markerY']= y
+      if self.sc.commandDelegate.get_markerX() is not None:
+        self.sc.commandDelegate.set_deltaMarkerX(x - self.sc.commandDelegate.get_markerX())
+      if self.sc.commandDelegate.get_markerY() is not None:
+        self.sc.commandDelegate.set_deltaMarkerY(y - self.sc.commandDelegate.get_markerY())
+      self.sc.commandDelegate.set_markerX(x)
+      self.sc.commandDelegate.set_markerY(y)
       self.pickpoints= None
     return None
 
