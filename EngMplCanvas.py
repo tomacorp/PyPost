@@ -27,7 +27,6 @@ class EngMplCanvas(FigureCanvas):
   """A QWidget that implements Matplotlib"""
   def __init__(self, parent=None, width=5, height=4, dpi=100):
 
-    self._globals= None
     self.yauto= True
     self.ylimlow= -16.0
     self.ylimhigh= 16.0

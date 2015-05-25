@@ -27,8 +27,6 @@ class EngMarker:
 
     self.fig = self.sc.figure
     self.retVal= {}
-    #self.markerX= None
-    #self.markerY= None
 
     self.markerDelegate= None
 
