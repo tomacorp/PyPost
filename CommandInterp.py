@@ -14,7 +14,6 @@ import h5py
 import EngEvaluate
 import ReadSpiceRaw
 import SpiceVarExpr
-# import EngMarker
 
 # di     show available vars from raw file
 # show   list user-assigned variables
@@ -45,6 +44,7 @@ import SpiceVarExpr
 #         Needs to check that expr is an array, or better extend int to array.
 #       NGSpice raw file has all the waveform names in lower case.
 #         Would like to make graphing them case insensitive.
+#       Path to NGSpice should be configured in a pull-down from the Main Window.
 
 # Layout for canvas: http://matplotlib.org/users/tight_layout_guide.html
 
