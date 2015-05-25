@@ -196,7 +196,6 @@ class Form(QWidget):
   def __init__(self, mainWindow):
     super(Form, self).__init__()
 
-    # self.mainWindow= mainWindow
     self.resize(720, 320)
     self.browser = QTextBrowser()
 
@@ -215,12 +214,6 @@ class Form(QWidget):
     self.setLayout(layout)
     self.lineedit.setFocus()
     self.lineedit.returnPressed.connect(self.updateUi)
-
-    # TODO: Make the globals coming from the markers to the interpreter
-    # go through here, so that the markers call a function up here that
-    # in turn pushed the data back down to the interpreter.
-    # Could also force the controller commands from CommandInterp to
-    # come back up here and then back down into the graphics view.
 
     self.commandInterp= CommandInterp.CommandInterp()
     self.commandInterp.setGraphicsDelegate(self.sc)

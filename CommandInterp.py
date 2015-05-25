@@ -14,7 +14,7 @@ import h5py
 import EngEvaluate
 import ReadSpiceRaw
 import SpiceVarExpr
-import EngMarker
+# import EngMarker
 
 # di     show available vars from raw file
 # show   list user-assigned variables
@@ -392,8 +392,8 @@ class CommandInterp:
   def setGraphicsDelegate(self, sc):
     self.sc= sc
     # The graphics canvas send back data from markers in the form of globals.
-    self.sc._globals= self._globals
-    self.marker= EngMarker.EngMarker(self.sc)
+    # self.sc._globals= self._globals
+    # self.marker= EngMarker.EngMarker(self.sc)
 
   # Marker delegate protocol implementation:
   def setMarkerDelegate(self, obj):
