@@ -35,6 +35,10 @@ import EngMplCanvas
 # Or: /Users/toma/anaconda/bin/python
 
 # TODO:
+
+#   Something is magical about the word 'Form' in this code.
+#     After changing it, the graph no longer shows up.
+#
 #   Add a 2-D plot function. Look at code from therm.py, incorporate this in an
 #     interactive way, both with png and hdf5 data.
 #
@@ -96,6 +100,8 @@ class Post(QMainWindow):
     self.createActions()
     self.createMenus()
 
+    self.externalGraphs= []
+
     self.setWindowTitle('PyPost')
     self.statusBar().showMessage('Ready')
 
@@ -131,6 +137,22 @@ class Post(QMainWindow):
   def next_(self):
     self.table.lineedit.historyDown()
 
+  def createGraph(self):
+    self.statusBar().showMessage("Invoked Graph|Create")
+    print("Create graph - Try turning on autoscaling")
+    self.externalGraphs.append(EngMplCanvas.EngMplCanvas(self, width=2.5, height=2, dpi=100))
+
+    self.table.commandInterp.setGraphicsDelegate(self.externalGraphs[0])
+
+    self.externalGraphs[0].setCommandDelegate(self.table.commandInterp)
+
+    self.externalGraphs[0].setWindowTitle("PyPost")
+
+    self.externalGraphs[0].show()
+    self.externalGraphs[0].activateWindow()
+    self.externalGraphs[0].raise_()
+
+
   def createMenus(self):
     menubar= self.menuBar()
 
@@ -153,6 +175,9 @@ class Post(QMainWindow):
     self.cmdMenu = menubar.addMenu("Command")
     self.cmdMenu.addAction(self.previousAct)
     self.cmdMenu.addAction(self.nextAct)
+
+    self.cmdGraph = menubar.addMenu("Graph")
+    self.cmdGraph.addAction(self.createGraphAct)
 
     self.helpMenu = menubar.addMenu("&Help")
     self.helpMenu.addAction(self.aboutAct)
@@ -191,8 +216,14 @@ class Post(QMainWindow):
                                      shortcut=QtGui.QKeySequence.PreviousChild,
                                      statusTip="Next Command", triggered=self.next_)
 
-class Form(QWidget):
+    self.createGraphAct = QtGui.QAction("Create", self,
+                                 shortcut=QtGui.QKeySequence.New,
+                                 statusTip="Create Graph", triggered=self.createGraph)
 
+class Form(QWidget):
+  """
+  Show a transcript, a command line, and a graphing canvas in one window.
+  """
   def __init__(self, mainWindow):
     super(Form, self).__init__()
 
@@ -219,7 +250,7 @@ class Form(QWidget):
     self.commandInterp.setGraphicsDelegate(self.sc)
     self.sc.setCommandDelegate(self.commandInterp)
 
-    self.setWindowTitle("PyCalc")
+    self.setWindowTitle("PyPost")
 
     self.show()
     self.activateWindow()

@@ -37,7 +37,12 @@ from matplotlib.figure import Figure
          #Ringing frequency
          #Oscillator frequency
          #Delay
+         #Resampling to fixed time steps with various interpolators
+         #Windowing functions
+         #FFT
  #TODO: Marker that follows mouse pointer
+ # TODO: Could probably eliminate the start_scrolling_ variables
+ #       at the expense of more function calls.
 
 
 class EngMplCanvas(FigureCanvas):
@@ -81,6 +86,11 @@ class EngMplCanvas(FigureCanvas):
     self.scroll_event_id= None
     self.figure_scroll_event_id= None
 
+    self.start_scrolling_xlimlow= self.xlimlow
+    self.start_scrolling_xlimhigh= self.xlimhigh
+    self.start_scrolling_ylimlow= self.ylimlow
+    self.start_scrolling_ylimhigh= self.ylimhigh
+
   def plotYList(self, res, arg, title):
     self.plt.plot(res)
     self.plt.set_xlabel('Index', fontsize=self.fsz,picker=5)
@@ -102,14 +112,20 @@ class EngMplCanvas(FigureCanvas):
   def setAutoscale(self):
     if self.yauto:
       self.plt.set_autoscaley_on(True)
+      self.ylimlow, self.ylimhigh= self.plt.get_ylim()
     else:
       self.plt.set_autoscaley_on(False)
       self.ylimlow, self.ylimhigh= self.plt.set_ylim(self.ylimlow, self.ylimhigh)
     if self.xauto:
       self.plt.set_autoscalex_on(True)
+      self.xlimlow, self.xlimhigh= self.plt.get_xlim()
     else:
       self.plt.set_autoscalex_on(False)
       self.xlimlow, self.xlimhigh= self.plt.set_xlim(self.xlimlow, self.xlimhigh)
+    self.start_scrolling_xlimlow= self.xlimlow
+    self.start_scrolling_xlimhigh= self.xlimhigh
+    self.start_scrolling_ylimlow= self.ylimlow
+    self.start_scrolling_ylimhigh= self.ylimhigh
 
   def setCommandDelegate(self, obj):
     self.commandDelegate= obj
@@ -130,7 +146,22 @@ class EngMplCanvas(FigureCanvas):
     self.figure_scroll_event_id= self.mpl_connect('scroll_event', self.onFigureScroll)
 
   def outGraphingMargin(self, event):
+    self.xlimlow, self.xlimhigh= self.plt.get_xlim()
+    self.ylimlow, self.ylimhigh= self.plt.get_ylim()
+
     self.mpl_disconnect(self.figure_scroll_event_id)
+    if (self.start_scrolling_xlimlow != self.xlimlow or
+        self.start_scrolling_xlimhigh != self.xlimhigh or
+        self.start_scrolling_ylimlow != self.ylimlow or
+        self.start_scrolling_ylimhigh != self.ylimhigh):
+      if (self.start_scrolling_xlimlow != self.xlimlow or
+          self.start_scrolling_xlimhigh != self.xlimhigh):
+        self.xauto= False
+        self.start_scrolling_xlimlow, self.start_scrolling_xlimhigh= self.plt.set_xlim(self.xlimlow, self.xlimhigh)
+      if (self.start_scrolling_ylimlow != self.ylimlow or
+          self.start_scrolling_ylimhigh != self.ylimhigh):
+        self.yauto= False
+        self.start_scrolling_ylimlow, self.start_scrolling_ylimhigh= self.plt.set_ylim(self.ylimlow, self.ylimhigh)
 
   def onFigureScroll(self, event):
     """

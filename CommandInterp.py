@@ -55,12 +55,12 @@ class CommandInterp:
     self.pyCode= ''
     self.sve= SpiceVarExpr.SpiceVarExpr()
     self.xvar= 't'
-    self.yauto= True
-    self.ylimlow= -16.0
-    self.ylimhigh= 16.0
-    self.xauto= True
-    self.xlimlow= 0.0
-    self.xlimhigh= 0.02
+    #self.yauto= True
+    #self.ylimlow= -16.0
+    #self.ylimhigh= 16.0
+    #self.xauto= True
+    #self.xlimlow= 0.0
+    #self.xlimhigh= 0.02
     self.rawFileName= ''
     self.spiceFileName= ''
     self.simulationBaseName= ''
@@ -118,13 +118,13 @@ class CommandInterp:
     message += "\n  Title: " + str(self.title)
 
     xLimitsMessage= "auto"
-    if not self.xauto:
-      xLimitsMessage= str(self.xlimlow) + " " + str(self.xlimhigh)
+    if not self.sc.xauto:
+      xLimitsMessage= str(self.sc.xlimlow) + " " + str(self.sc.xlimhigh)
     message += "\n  X Limits: " + xLimitsMessage
 
     yLimitsMessage= "auto"
-    if not self.yauto:
-      yLimitsMessage= str(self.ylimlow) + " " + str(self.ylimhigh)
+    if not self.sc.yauto:
+      yLimitsMessage= str(self.sc.ylimlow) + " " + str(self.sc.ylimhigh)
     message += "\n  Y Limits: " + yLimitsMessage
     return message
 
@@ -334,17 +334,17 @@ class CommandInterp:
       setarg= regexSet.group(2)
       if setcmd == 'xname':
         self.xvar = setarg
-        self.pyCode= 'graph.xname('+ self.xname + ')'
+        self.pyCode= 'graph.xname("'+ self.xname + '")'
         message = "Set x variable to " + str(self.xvar)
       elif setcmd == 'title':
         self.title= setarg
-        self.pyCode= 'graph.title('+ self.title + ')'
+        self.pyCode= 'graph.title("'+ self.title + '")'
       elif setcmd == 'yl':
         if str(setarg) == 'auto':
-          self.yauto = True
+          self.sc.yauto = True
           self.pyCode = 'graph.ylimAuto()'
         else:
-          self.yauto = False
+          self.sc.yauto = False
           regexRange= re.match(r'^\s*(\S+)\s+(\S+)', setarg)
           if regexRange is not None:
             loflg, lo= self.isEngrNumber(regexRange.group(1))
@@ -357,15 +357,17 @@ class CommandInterp:
                 limtmp= lo
                 lo= hi
                 hi= limtmp
-              self.ylimlow= lo
-              self.ylimhigh= hi
-              self.pyCode = 'graph.ylim(' + str(lo) + ',' + str(hi) + ')'
+              self.sc.ylimlow= lo
+              self.sc.ylimhigh= hi
+              self.pyCode = 'graph.set_ylim(' + str(lo) + ',' + str(hi) + ')'
+              self.sc.plt.set_ylim(lo, hi)
+              self.sc.draw()
       elif setcmd == 'xl':
         if str(setarg) == 'auto':
-          self.xauto = True
+          self.sc.xauto = True
           self.pyCode = 'graph.xlimAuto()'
         else:
-          self.xauto = False
+          self.sc.xauto = False
           regexRange= re.match(r'^\s*(\S+)\s+(\S+)', setarg)
           if regexRange is not None:
             loflg, lo= self.isEngrNumber(regexRange.group(1))
@@ -381,9 +383,11 @@ class CommandInterp:
                 limtmp= lo
                 lo= hi
                 hi= limtmp
-              self.xlimlow= lo
-              self.xlimhigh= hi
-              self.pyCode = 'graph.xlim(' + str(lo) + ',' + str(hi) + ')'
+              self.sc.xlimlow= lo
+              self.sc.xlimhigh= hi
+              self.sc.plt.set_xlim(lo, hi)
+              self.pyCode = 'graph.set_xlim(' + str(lo) + ',' + str(hi) + ')'
+              self.sc.draw()
       else:
         message = "Unrecognized set command: " + setcmd
     else:
