@@ -56,6 +56,13 @@ class EngMplCanvas(FigureCanvas):
     self.xlimlow= 0.0
     self.xlimhigh= 0.02
     self.fsz= 12
+    self.xlabel= 'X'
+    self.ylabel= 'Y'
+    self.title= 'title'
+    # self.xvar stores the name of the Command Interpreter's variable for the x-axis.
+    # This is used so that the graphing window contains the graph state
+    # needed by the CommandInterp, which might vary from graph to graph.
+    self.xvar= 't'
 
     self.commandDelegate= None
 
@@ -127,8 +134,6 @@ class EngMplCanvas(FigureCanvas):
     self.start_scrolling_ylimlow= self.ylimlow
     self.start_scrolling_ylimhigh= self.ylimhigh
 
-  def setCommandDelegate(self, obj):
-    self.commandDelegate= obj
 
   def inGraphingArea(self, event):
     self.pick_event_id= self.mpl_connect('pick_event', self.onPick)
@@ -267,3 +272,73 @@ class EngMplCanvas(FigureCanvas):
     if (idx == 0):
       return None, None
     return x, y
+
+
+  # This allows the graph to send changes back to the controller.
+
+  def setCommandDelegate(self, obj):
+    self.commandDelegate= obj
+
+  # These methods implement delegating graphics calls.
+  # They get/set the state variables
+
+  def get_xauto(self):
+    return self.xauto
+
+  def get_yauto(self):
+    return self.yauto
+
+  def get_xlimlow(self):
+    return self.xlimlow
+
+  def get_xlimhigh(self):
+    return self.xlimhigh
+
+  def get_ylimlow(self):
+    return self.ylimlow
+
+  def get_ylimhigh(self):
+    return self.ylimhigh
+
+  def get_xlabel(self):
+    return self.xlabel
+
+  def get_ylabel(self):
+    return self.ylabel
+
+  def get_title(self):
+    return self.title
+
+  def get_xvar(self):
+    return self.xvar
+
+
+  def set_xauto(self, s):
+    self.xauto= s
+
+  def set_yauto(self, s):
+    self.yauto= s
+
+  def set_xlimlow(self, s):
+    self.xlimlow= s
+
+  def set_xlimhigh(self, s):
+    self.xlimhigh= s
+
+  def set_ylimlow(self, s):
+    self.ylimlow= s
+
+  def set_ylimhigh(self, s):
+    self.ylimhigh= s
+
+  def set_xlabel(self, s):
+    self.xlabel= s
+
+  def set_ylabel(self, s):
+    self.ylabel= s
+
+  def set_title(self, s):
+    self.title= s
+
+  def set_xvar(self, s):
+    self.xvar= s

@@ -57,11 +57,15 @@ class CommandInterp:
     self.evaluator= EngEvaluate.EngEvaluate(self._globals)
     self.pyCode= ''
     self.sve= SpiceVarExpr.SpiceVarExpr()
-    self.xvar= 't'
+
+    # Move to simulator delegate
     self.rawFileName= ''
     self.spiceFileName= ''
     self.simulationBaseName= ''
-    self.title=''
+
+    # Move to graphics delegate
+    #self.xvar= 't'
+    #self.title=''
     return
 
   def executeCmd(self, cmdText):
@@ -111,17 +115,17 @@ class CommandInterp:
 
   def showSettings(self):
     self.pyCode= ''
-    message = "Parameters are:\n  Sweep variable: " + str(self.xvar)
-    message += "\n  Title: " + str(self.title)
+    message = "Parameters are:\n  Sweep variable: " + str(self.sc.get_xvar())
+    message += "\n  Title: " + str(self.sc.get_title())
 
     xLimitsMessage= "auto"
-    if not self.sc.xauto:
-      xLimitsMessage= str(self.sc.xlimlow) + " " + str(self.sc.xlimhigh)
+    if not self.sc.get_xauto():
+      xLimitsMessage= str(self.sc.get_xlimlow()) + " " + str(self.sc.get_xlimhigh())
     message += "\n  X Limits: " + xLimitsMessage
 
     yLimitsMessage= "auto"
     if not self.sc.yauto:
-      yLimitsMessage= str(self.sc.ylimlow) + " " + str(self.sc.ylimhigh)
+      yLimitsMessage= str(self.sc.get_ylimlow()) + " " + str(self.sc.get_ylimhigh())
     message += "\n  Y Limits: " + yLimitsMessage
     return message
 
@@ -248,11 +252,13 @@ class CommandInterp:
     return message
 
   def readRawFile(self):
+    # TODO: There should be a function in ReadSpiceRaw to find the proper value for the x variable,
+    #       instead of assuming that it is named 't'
     rawReader= ReadSpiceRaw.spice_read(self.rawFileName)
     if rawReader is not None:
       rawReader.loadSpiceVoltages()
       self._globals['r']= rawReader
-      self.xvar= 't'
+      self.sc.set_xvar('t')
       self._globals['t']= r.t()
 
   def readHDF5File(self):
@@ -264,9 +270,10 @@ class CommandInterp:
   def getTitleLine(self):
     if os.path.isfile(self.spiceFileName):
       with open(self.spiceFileName, 'r') as f:
-        self.title = f.readline()
-        self.title = self.title.replace('\n', '')
-        self.title = self.title.replace('\r', '')
+        title = f.readline()
+        title = title.replace('\n', '')
+        title = title.replace('\r', '')
+        self.sc.set_title(title)
 
   # TODO: Move this to MainWindow so that the Qt calls aren't used here.
   # TODO: Make the simulator path and command configurable.
@@ -300,10 +307,10 @@ class CommandInterp:
     if not success:
       return "Error evaluating plot expression: " + cmdText
 
-    if self.xvar in self._globals:
-      typeXAxis= str(type(self._globals[self.xvar]))
+    if self.sc.get_xvar() in self._globals:
+      typeXAxis= str(type(self._globals[self.sc.get_xvar()]))
       if "<type 'numpy.ndarray'>" in typeXAxis:
-        xAxisPts= len(self._globals[self.xvar])
+        xAxisPts= len(self._globals[self.sc.get_xvar()])
       else:
         xAxisPts= 1
     else:
@@ -316,10 +323,10 @@ class CommandInterp:
       yAxisPts= 1
 
     if typeXAxis == None:
-      self.sc.plotYList(res, arg, self.title)
+      self.sc.plotYList(res, arg, self.sc.get_title())
     else:
       if xAxisPts == yAxisPts:
-        self.sc.plotXYList(self._globals[self.xvar], res, self.xvar, arg, self.title)
+        self.sc.plotXYList(self._globals[self.sc.get_xvar()], res, self.sc.get_xvar(), arg, self.sc.get_title())
       else:
         plX= 'point' if xAxisPts == 1 else 'points'
         plY= 'point' if yAxisPts == 1 else 'points'
@@ -332,18 +339,18 @@ class CommandInterp:
       setcmd= regexSet.group(1)
       setarg= regexSet.group(2)
       if setcmd == 'xname':
-        self.xvar = setarg
-        self.pyCode= 'graph.xname("'+ self.xname + '")'
-        message = "Set x variable to " + str(self.xvar)
+        self.sc.set_xvar(setarg)
+        self.pyCode= 'graph.xname("'+ self.sc.get_xvar() + '")'
+        message = "Set x variable to " + str(self.sc.get_xvar())
       elif setcmd == 'title':
-        self.title= setarg
-        self.pyCode= 'graph.title("'+ self.title + '")'
+        self.sc.set_title(setarg)
+        self.pyCode= 'graph.title("'+ self.sc.get_title() + '")'
       elif setcmd == 'yl':
         if str(setarg) == 'auto':
-          self.sc.yauto = True
+          self.sc.set_yauto(True)
           self.pyCode = 'graph.ylimAuto()'
         else:
-          self.sc.yauto = False
+          self.sc.set_yauto(False)
           regexRange= re.match(r'^\s*(\S+)\s+(\S+)', setarg)
           if regexRange is not None:
             loflg, lo= self.isEngrNumber(regexRange.group(1))
@@ -363,10 +370,10 @@ class CommandInterp:
               self.sc.draw()
       elif setcmd == 'xl':
         if str(setarg) == 'auto':
-          self.sc.xauto = True
+          self.sc.set_xauto(True)
           self.pyCode = 'graph.xlimAuto()'
         else:
-          self.sc.xauto = False
+          self.sc.set_xauto(False)
           regexRange= re.match(r'^\s*(\S+)\s+(\S+)', setarg)
           if regexRange is not None:
             loflg, lo= self.isEngrNumber(regexRange.group(1))
@@ -394,7 +401,7 @@ class CommandInterp:
 
   def setGraphicsDelegate(self, sc):
     self.sc= sc
-    # The graphics canvas send back data from markers in the form of globals.
+    # The graphics canvas sends back data from markers in the form of globals.
     # self.sc._globals= self._globals
     # self.marker= EngMarker.EngMarker(self.sc)
 
