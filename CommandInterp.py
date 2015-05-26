@@ -33,34 +33,31 @@ import SpiceVarExpr
 #       implement save-all as ascii
 #       implement restore-all as ascii
 #       save state from one run to the next
-#       reset state to default
+#       command to reset state to default
 #       implement gr x .vs y
 #       implement freq instead of time as an axis, vdb, idb, vm, im
 #       AC analysis - complex numbers from raw file
-#       2D plots with thermal solutions
+#       2D plots for thermal solutions
 #       Add web server to inject remote commands via http
 #       gr 3
 #         Can't get length of integer.
 #         Needs to check that expr is an array, or better extend int to array.
 #       NGSpice raw file has all the waveform names in lower case.
-#         Would like to make graphing them case insensitive.
+#         Would like option to make graphing them case insensitive.
 #       Path to NGSpice should be configured in a pull-down from the Main Window.
 
 # Layout for canvas: http://matplotlib.org/users/tight_layout_guide.html
 
 class CommandInterp:
   def __init__(self):
+
+    # TODO: Move xvar to graphics delegate
+
     self._globals= globals()
     self.evaluator= EngEvaluate.EngEvaluate(self._globals)
     self.pyCode= ''
     self.sve= SpiceVarExpr.SpiceVarExpr()
     self.xvar= 't'
-    #self.yauto= True
-    #self.ylimlow= -16.0
-    #self.ylimhigh= 16.0
-    #self.xauto= True
-    #self.xlimlow= 0.0
-    #self.xlimhigh= 0.02
     self.rawFileName= ''
     self.spiceFileName= ''
     self.simulationBaseName= ''
@@ -272,6 +269,8 @@ class CommandInterp:
         self.title = self.title.replace('\r', '')
 
   # TODO: Move this to MainWindow so that the Qt calls aren't used here.
+  # TODO: Make the simulator path and command configurable.
+  # TODO: Should probably have a delegate for the simulator.
   def simulate(self, arg):
     if arg != '':
       self.setCircuitName(arg)
@@ -373,8 +372,8 @@ class CommandInterp:
             loflg, lo= self.isEngrNumber(regexRange.group(1))
             hiflg, hi= self.isEngrNumber(regexRange.group(2))
             if loflg and hiflg:
-              self.xlimlow= lo
-              self.xlimhigh= hi
+              self.sc.xlimlow= lo
+              self.sc.xlimhigh= hi
             if loflg and hiflg:
               if (lo == hi):
                 lo= lo * 0.99
@@ -426,8 +425,3 @@ class CommandInterp:
       return self._globals['markerY']
     else:
       return None;
-
-  # Graphics limit delegate protocol implementation:
-  def set_xlimitlow(self, val):
-    self.xlimlow= val
-    #  ... More methods ...
