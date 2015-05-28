@@ -13,3 +13,11 @@ There is a python in
 Put cx_freeze in other python:
 /Users/toma/python278i/bin
 pip install cx_Freeze
+
+To work with github:
+# Send the latest to github
+git push origin master
+# Get the latest from github:
+git pull origin master
+
+
