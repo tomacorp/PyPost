@@ -1,5 +1,5 @@
 # PyPost
-Graph and post process simulator data
+**Graph and post process simulator data**
 
 For now this program is intended to be a replacement for Nutmeg,
 which is the post processor for data created by NGSpice and other circuit simulators.
