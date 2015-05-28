@@ -93,16 +93,17 @@ class Post(QMainWindow):
   def __init__(self, parent=None):
     super(Post, self).__init__(parent)
 
-    self.table = Form(self)
+    self.externalGraphs= []
+
+    self.table = MainWin(self)
     self.setCentralWidget(self.table)
 
-    self.resize(1200, 420)
     self.createActions()
     self.createMenus()
 
-    self.externalGraphs= []
-
     self.setWindowTitle('PyPost')
+
+    self.resize(1200, 420)
     self.statusBar().showMessage('Ready')
 
   def newFile(self):
@@ -220,12 +221,13 @@ class Post(QMainWindow):
                                  shortcut=QtGui.QKeySequence.New,
                                  statusTip="Create Graph", triggered=self.createGraph)
 
-class Form(QWidget):
+# Autoscaling stopped working at progral launch when this class was renamed MainWin
+class MainWin(QWidget):
   """
   Show a transcript, a command line, and a graphing canvas in one window.
   """
   def __init__(self, mainWindow):
-    super(Form, self).__init__()
+    super(MainWin, self).__init__()
 
     self.resize(720, 320)
     self.browser = QTextBrowser()

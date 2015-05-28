@@ -168,11 +168,9 @@ class EngMplCanvas(FigureCanvas):
         self.start_scrolling_ylimhigh != self.ylimhigh):
       if (self.start_scrolling_xlimlow != self.xlimlow or
           self.start_scrolling_xlimhigh != self.xlimhigh):
-        self.xauto= False
         self.start_scrolling_xlimlow, self.start_scrolling_xlimhigh= self.plt.set_xlim(self.xlimlow, self.xlimhigh)
       if (self.start_scrolling_ylimlow != self.ylimlow or
           self.start_scrolling_ylimhigh != self.ylimhigh):
-        self.yauto= False
         self.start_scrolling_ylimlow, self.start_scrolling_ylimhigh= self.plt.set_ylim(self.ylimlow, self.ylimhigh)
 
   def onFigureScroll(self, event):
