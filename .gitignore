@@ -28,6 +28,7 @@
 *.xbm
 *.xpm
 *.sqlite
+*.wpu
 x
 restats
 attic
