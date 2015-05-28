@@ -16,7 +16,7 @@ from PySide.QtGui import (QApplication, QDialog, QLineEdit, QTextBrowser,
 
 import matplotlib
 matplotlib.rcParams['backend.qt4']='PySide'
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+# from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 # from twisted.application import reactors

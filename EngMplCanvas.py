@@ -18,6 +18,7 @@ import matplotlib
 matplotlib.rcParams['backend.qt4']='PySide'
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+from matplotlib.ticker import EngFormatter
 
 # BUG: After panning and zooming, gs command resets view to original.
 #      Should be sending messages back to graphics limits so that they are similar
@@ -98,12 +99,16 @@ class EngMplCanvas(FigureCanvas):
     self.start_scrolling_ylimlow= self.ylimlow
     self.start_scrolling_ylimhigh= self.ylimhigh
 
+    self.formatter = EngFormatter(unit='', places=1)
+
   def plotYList(self, res, arg, title):
     self.plt.plot(res)
     self.plt.set_xlabel('Index', fontsize=self.fsz,picker=5)
     self.plt.set_ylabel(arg, fontsize=self.fsz)
     self.plt.set_title(title, fontsize=self.fsz)
     self.setAutoscale()
+    self.plt.xaxis.set_major_formatter(self.formatter)
+    self.plt.yaxis.set_major_formatter(self.formatter)
     self.draw()
     self.show()
 
@@ -112,6 +117,8 @@ class EngMplCanvas(FigureCanvas):
     self.plt.set_xlabel(xlabel, fontsize=self.fsz)
     self.plt.set_ylabel(ylabel, fontsize=self.fsz)
     self.plt.set_title(title, fontsize=self.fsz)
+    self.plt.xaxis.set_major_formatter(self.formatter)
+    self.plt.yaxis.set_major_formatter(self.formatter)
     self.setAutoscale()
     self.draw()
     self.show()

@@ -9,6 +9,7 @@ proj.file-list = [loc('CommandInterp.py'),
                   loc('EngMplCanvas.py'),
                   loc('LineEditHist.py'),
                   loc('MainWindow.py'),
+                  loc('README.md'),
                   loc('ReadSpiceRaw.py'),
                   loc('SpiceVarExpr.py')]
 proj.file-type = 'shared'
