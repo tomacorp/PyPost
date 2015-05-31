@@ -24,6 +24,7 @@ from matplotlib.figure import Figure
 import CommandInterp
 import LineEditHist
 import EngMplCanvas
+from EngMplCanvas import EngMplCanvasDict
 
 # conda install pyside
 # pip install fysom
@@ -33,6 +34,9 @@ import EngMplCanvas
 # Custom python: /Users/toma/Library/Enthought/Canopy_64bit/User/bin/python
 # Or: /Users/toma/python278i/bin/python
 # Or: /Users/toma/anaconda/bin/python
+
+# Using factories and other Java-esque patterns:
+#   http://python-3-patterns-idioms-test.readthedocs.org/en/latest/Factory.html
 
 # TODO:
 
@@ -93,7 +97,7 @@ class Post(QMainWindow):
   def __init__(self, parent=None):
     super(Post, self).__init__(parent)
 
-    self.externalGraphs= []
+    self.graphs= EngMplCanvasDict()
 
     self.table = MainWin(self)
     self.setCentralWidget(self.table)
@@ -139,20 +143,16 @@ class Post(QMainWindow):
     self.table.lineedit.historyDown()
 
   def createGraph(self):
-    self.statusBar().showMessage("Invoked Graph|Create")
-    print("Create graph - Try turning on autoscaling")
-    self.externalGraphs.append(EngMplCanvas.EngMplCanvas(self, width=2.5, height=2, dpi=100))
-
-    self.table.commandInterp.setGraphicsDelegate(self.externalGraphs[0])
-
-    self.externalGraphs[0].setCommandDelegate(self.table.commandInterp)
-
-    self.externalGraphs[0].setWindowTitle("PyPost")
-
-    self.externalGraphs[0].show()
-    self.externalGraphs[0].activateWindow()
-    self.externalGraphs[0].raise_()
-
+    canvasName= self.graphs.create()
+    self.graphs.setActive(canvasName)
+    graph= self.graphs.getActive()
+    graph.setWindowTitle(canvasName)
+    graph.show()
+    graph.activateWindow()
+    graph.raise_()
+    graph.setCommandDelegate(self.table.commandInterp)
+    self.table.commandInterp.setGraphicsDelegate(graph)
+    self.statusBar().showMessage("Created graph " + canvasName)
 
   def createMenus(self):
     menubar= self.menuBar()
@@ -221,7 +221,6 @@ class Post(QMainWindow):
                                  shortcut=QtGui.QKeySequence.New,
                                  statusTip="Create Graph", triggered=self.createGraph)
 
-# Autoscaling stopped working at progral launch when this class was renamed MainWin
 class MainWin(QWidget):
   """
   Show a transcript, a command line, and a graphing canvas in one window.

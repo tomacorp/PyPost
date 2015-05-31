@@ -42,7 +42,7 @@ from matplotlib.ticker import EngFormatter
          #Windowing functions
          #FFT
  #TODO: Marker that follows mouse pointer
- # TODO: Could probably eliminate the start_scrolling_ variables
+ #TODO: Could probably eliminate the start_scrolling_ variables
  #       at the expense of more function calls.
 
 
@@ -347,3 +347,40 @@ class EngMplCanvas(FigureCanvas):
 
   def set_xvar(self, s):
     self.xvar= s
+
+
+class EngMplCanvasDict(EngMplCanvas):
+  def __init__(self, parent=None, width=5, height=4, dpi=100):
+    self.cd= {}
+    self.active= ''
+    self.parent= parent
+    self.width= width
+    self.height= height
+    self.dpi= dpi
+
+  def setActive(self, canvasName):
+    if (canvasName in self.cd):
+      self.active= canvasName
+    else:
+      print("Error: no canvas is named " + str(canvasName))
+    return
+
+  def getActive(self):
+    if (self.active in self.cd):
+      return self.cd[self.active]
+    else:
+      print("Error: the active canvas " + str(canvasName) + " does not exist")
+
+  def create(self, canvasName='', parent=None, width=5, height=4, dpi=100):
+    if canvasName == '':
+      canvasCount= len(self.cd) + 1
+      canvasName= "PyPost " + str(canvasCount)
+    c= EngMplCanvas(parent=parent, width=width, height=height, dpi=dpi)
+    c.setWindowTitle(canvasName)
+    self.cd[canvasName]= c
+    return canvasName
+
+  def delete(self, canvasName):
+    if self.active == canvasName:
+      self.active= ''
+    del self.cd[canvasName]

@@ -334,7 +334,7 @@ class CommandInterp:
     return message
 
   def setPostParameter(self, arg):
-    regexSet= re.match(r'^(xname|title|xl|yl) (.*)', arg)
+    regexSet= re.match(r'^(xname|title|xl|yl|graphdev) (.*)', arg)
     if regexSet is not None:
       setcmd= regexSet.group(1)
       setarg= regexSet.group(2)
@@ -394,6 +394,9 @@ class CommandInterp:
               self.sc.plt.set_xlim(lo, hi)
               self.pyCode = 'graph.set_xlim(' + str(lo) + ',' + str(hi) + ')'
               self.sc.draw()
+      elif setcmd == 'graphdev':
+        pass
+
       else:
         message = "Unrecognized set command: " + setcmd
     else:
