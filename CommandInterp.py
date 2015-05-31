@@ -127,6 +127,10 @@ class CommandInterp:
     if not self.sc.yauto:
       yLimitsMessage= str(self.sc.get_ylimlow()) + " " + str(self.sc.get_ylimhigh())
     message += "\n  Y Limits: " + yLimitsMessage
+
+    currentCanvasName= self.sc.get_name()
+    message += "\n  Current graph name: " + str(currentCanvasName)
+
     return message
 
   def executeLongCommand(self, longCmd, cmdText):
@@ -395,18 +399,29 @@ class CommandInterp:
               self.pyCode = 'graph.set_xlim(' + str(lo) + ',' + str(hi) + ')'
               self.sc.draw()
       elif setcmd == 'graphdev':
-        pass
+        currentCanvasName= self.sc.get_name()
+        if setarg != currentCanvasName:
+          if setarg not in self.graphs.cd:
+            print "Need a new graph called " + str(setarg)
+            self.graphs.create(canvasName=str(setarg))
+          else:
+            print "Need to set active graph to " + str(setarg)
+          self.graphs.setActive(setarg)
+          self.setGraphicsActiveDelegate(self.graphs.getActiveCanvas())
 
       else:
         message = "Unrecognized set command: " + setcmd
     else:
       message= "Unrecognized setting: " + arg
 
-  def setGraphicsDelegate(self, sc):
+  def setGraphicsActiveDelegate(self, sc):
     self.sc= sc
     # The graphics canvas sends back data from markers in the form of globals.
     # self.sc._globals= self._globals
     # self.marker= EngMarker.EngMarker(self.sc)
+
+  def setGraphicsWindowsDelegate(self, graphs):
+    self.graphs= graphs
 
   # Marker delegate protocol implementation:
   def setMarkerDelegate(self, obj):

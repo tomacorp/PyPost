@@ -145,13 +145,13 @@ class Post(QMainWindow):
   def createGraph(self):
     canvasName= self.graphs.create()
     self.graphs.setActive(canvasName)
-    graph= self.graphs.getActive()
+    graph= self.graphs.getActiveCanvas()
     graph.setWindowTitle(canvasName)
     graph.show()
     graph.activateWindow()
     graph.raise_()
     graph.setCommandDelegate(self.table.commandInterp)
-    self.table.commandInterp.setGraphicsDelegate(graph)
+    self.table.commandInterp.setGraphicsActiveDelegate(graph)
     self.statusBar().showMessage("Created graph " + canvasName)
 
   def createMenus(self):
@@ -233,7 +233,7 @@ class MainWin(QWidget):
 
     canvasName= mainWindow.graphs.create()
     mainWindow.graphs.setActive(canvasName)
-    self.sc= mainWindow.graphs.getActive()
+    self.sc= mainWindow.graphs.getActiveCanvas()
 
     self.lineedit = LineEditHist.lineEditHist("")
     self.lineedit.selectAll()
@@ -251,7 +251,8 @@ class MainWin(QWidget):
     self.lineedit.returnPressed.connect(self.updateUi)
 
     self.commandInterp= CommandInterp.CommandInterp()
-    self.commandInterp.setGraphicsDelegate(self.sc)
+    self.commandInterp.setGraphicsActiveDelegate(self.sc)
+    self.commandInterp.setGraphicsWindowsDelegate(mainWindow.graphs)
     self.sc.setCommandDelegate(self.commandInterp)
 
     self.setWindowTitle("PyPost")

@@ -60,6 +60,7 @@ class EngMplCanvas(FigureCanvas):
     self.xlabel= 'X'
     self.ylabel= 'Y'
     self.title= 'title'
+    self.name= ''
     # self.xvar stores the name of the Command Interpreter's variable for the x-axis.
     # This is used so that the graphing window contains the graph state
     # needed by the CommandInterp, which might vary from graph to graph.
@@ -317,6 +318,9 @@ class EngMplCanvas(FigureCanvas):
   def get_xvar(self):
     return self.xvar
 
+  def get_name(self):
+    return self.name
+
 
   def set_xauto(self, s):
     self.xauto= s
@@ -365,18 +369,22 @@ class EngMplCanvasDict(EngMplCanvas):
       print("Error: no canvas is named " + str(canvasName))
     return
 
-  def getActive(self):
+  def getActiveCanvas(self):
     if (self.active in self.cd):
       return self.cd[self.active]
     else:
       print("Error: the active canvas " + str(canvasName) + " does not exist")
 
+  def getActiveCanvasName(self):
+    return self.active
+
   def create(self, canvasName='', parent=None, width=5, height=4, dpi=100):
     if canvasName == '':
       canvasCount= len(self.cd) + 1
-      canvasName= "PyPost " + str(canvasCount)
+      canvasName= "PyPost_" + str(canvasCount)
     c= EngMplCanvas(parent=parent, width=width, height=height, dpi=dpi)
     c.setWindowTitle(canvasName)
+    c.name= canvasName
     self.cd[canvasName]= c
     return canvasName
 
