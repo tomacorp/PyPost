@@ -235,7 +235,6 @@ class MainWin(QWidget):
     mainWindow.graphs.setActive(canvasName)
     self.sc= mainWindow.graphs.getActive()
 
-    # self.sc = EngMplCanvas.EngMplCanvas(self, width=2.5, height=2, dpi=100)
     self.lineedit = LineEditHist.lineEditHist("")
     self.lineedit.selectAll()
 
