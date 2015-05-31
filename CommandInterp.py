@@ -73,7 +73,7 @@ class CommandInterp:
     cmdText=cmdText.lstrip()
     print("Command: " + cmdText)
     message= ''
-    longCmd= re.match(r'^(ci|gr|gs|set|si|history|readh5) (.*)', cmdText)
+    longCmd= re.match(r'^(ci|gr|gs|set|si|history|readh5|include|\.) (.*)', cmdText)
     shortCmd= re.match(r'^(ci|set|si|history)$', cmdText)
     if longCmd is not None:
       message= self.executeLongCommand(longCmd, cmdText)
@@ -176,6 +176,9 @@ class CommandInterp:
         message= 'file "' + arg + '" not found'
         print(message)
         self.pyCode= "# " + message
+    elif cmd == 'include' or cmd == '.':
+      self.include(arg)
+      self.pyCode='includeFile(' + arg + ')'
     return message
 
   def isEngrNumber(self, expression):
@@ -299,6 +302,17 @@ class CommandInterp:
     print "Finished simulating"
     self.readRawFile()
     print "Finished reading raw file"
+
+  def include(self, arg):
+    print "Include file: " + str(arg)
+
+    if not os.path.isfile(arg):
+      print("Include file " + str(arg) + " not found")
+      return
+
+    with open(arg, 'r') as handle:
+      for cmdText in handle:
+        self.executeCmd(cmdText)
 
   def graphExpr(self, arg, cmdText):
     plotExpr= arg

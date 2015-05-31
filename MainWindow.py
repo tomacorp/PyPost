@@ -39,9 +39,6 @@ from EngMplCanvas import EngMplCanvasDict
 #   http://python-3-patterns-idioms-test.readthedocs.org/en/latest/Factory.html
 
 # TODO:
-
-#   Something is magical about the word 'Form' in this code.
-#     After changing it, the graph no longer shows up.
 #
 #   Add a 2-D plot function. Look at code from therm.py, incorporate this in an
 #     interactive way, both with png and hdf5 data.

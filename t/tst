@@ -1,0 +1,7 @@
+ci ngtest
+gr v(v3)
+gs v(v2)
+set graphdev vout
+gr v(v3)*v(v2)/3.0
+set graphdev PyPost_1
+gs v(v1)
