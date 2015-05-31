@@ -231,7 +231,11 @@ class MainWin(QWidget):
     self.resize(720, 320)
     self.browser = QTextBrowser()
 
-    self.sc = EngMplCanvas.EngMplCanvas(self, width=2.5, height=2, dpi=100)
+    canvasName= mainWindow.graphs.create()
+    mainWindow.graphs.setActive(canvasName)
+    self.sc= mainWindow.graphs.getActive()
+
+    # self.sc = EngMplCanvas.EngMplCanvas(self, width=2.5, height=2, dpi=100)
     self.lineedit = LineEditHist.lineEditHist("")
     self.lineedit.selectAll()
 
