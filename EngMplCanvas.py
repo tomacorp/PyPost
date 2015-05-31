@@ -20,12 +20,7 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.ticker import EngFormatter
 
-# BUG: After panning and zooming, gs command resets view to original.
-#      Should be sending messages back to graphics limits so that they are similar
-#      to what would happen manually.
-#      Autoscale needs to be turned off.
-#      Python commands need to be logged at some point.
-#        This might be hard to make efficient.
+ # TODO:     Python commands need to be logged at some point.
 
 
  #TODO: Use engineering notation for marker annotation

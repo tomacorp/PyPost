@@ -340,6 +340,12 @@ class spice_read(object):
   def t(self):
     return self.spiceScale
 
+  def getVoltageNames(self):
+    return self.spiceVoltage.keys()
+
+  def getCurrentNames(self):
+    return self.spiceCurrent.keys()
+
 if __name__ == "__main__":
   reader= spice_read('ngtest.raw')
   reader.loadSpiceVoltages()
@@ -347,3 +353,7 @@ if __name__ == "__main__":
   print str(v2)
   lin= reader.i('lin')
   print str(lin)
+  print "Voltages"
+  print reader.getVoltageNames()
+  print "Currents"
+  print reader.getCurrentNames()

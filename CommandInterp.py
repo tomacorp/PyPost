@@ -27,6 +27,15 @@ import SpiceVarExpr
 # label time, date
 # ticks, grid, number of divisions
 
+# TODO: Implement di
+#       Something like:
+#         r.spiceVoltage.keys()
+#         res = ['v1', 'v2', 'v3']
+#         r.spiceCurrent.keys()
+#         res = ['lin', 'vin']
+
+# TODO: Look at how subcircuits are implemented for di and voltage graphing, consider push/pop
+
 # TODO: Check for presence of raw data in r before substituting and graphing with v(v1)
 #       implement HDF5 file reader
 #       implement Python program output as transcript
@@ -74,7 +83,7 @@ class CommandInterp:
     print("Command: " + cmdText)
     message= ''
     longCmd= re.match(r'^(ci|gr|gs|set|si|history|readh5|include|\.) (.*)', cmdText)
-    shortCmd= re.match(r'^(ci|set|si|history)$', cmdText)
+    shortCmd= re.match(r'^(ci|set|si|di|history)$', cmdText)
     if longCmd is not None:
       message= self.executeLongCommand(longCmd, cmdText)
     elif shortCmd is not None:
@@ -108,6 +117,12 @@ class CommandInterp:
       else:
         message= "Circuit name has not been set yet"
 
+    elif cmd == 'di':
+      self.displaySweepVar()
+      self.displayVoltages()
+      self.displayCurrents()
+      self.pyCode= "print(r.getVoltageNames())\nprint(r.getCurrentNames())"
+
     elif cmd == 'history':
       print "History not implemented yet."
 
@@ -132,6 +147,25 @@ class CommandInterp:
     message += "\n  Current graph name: " + str(currentCanvasName)
 
     return message
+
+  def displaySweepVar(self):
+    if self.sc.get_xvar() is not None:
+      print("Sweep variable is " + str(self.sc.get_xvar()))
+
+  def displayVoltages(self):
+    if 'r' in globals() and r is not None:
+      for voltage in r.getVoltageNames():
+        print("v(" + str(voltage) + ")")
+    else:
+      print("No voltage variables")
+
+  def displayCurrents(self):
+    if 'r' in globals() and r is not None:
+      # for voltage in self._globals['r'].getVoltageNames():
+      for voltage in r.getCurrentNames():
+        print("i(" + str(voltage) + ")")
+    else:
+      print("No current variables")
 
   def executeLongCommand(self, longCmd, cmdText):
     cmd= longCmd.group(1)
@@ -248,7 +282,7 @@ class CommandInterp:
         return False, 0.0
 
   def setCircuitName(self, arg):
-    if (arg != ''):  # TODO Need similar for isEng and also engineerToFloat(string) to convert engr notation to float
+    if (arg != ''):
       self.simulationBaseName= arg
       self.rawFileName= arg + ".raw"
       self.spiceFileName= arg + ".cki"
