@@ -325,11 +325,12 @@ class spice_read(object):
         voltageRE= re.match(r'v\(([^\)]+)\)', d.name)
         if voltageRE:
           varName= voltageRE.group(1)
-          self.spiceVoltage[varName]= v
+          self.spiceVoltage[str(varName)]= v
+          print("Loading spice voltage name: " + str(varName))
         currentRE= re.match(r'i\(([^\)]+)\)', d.name)
         if currentRE:
           varName= currentRE.group(1)
-          self.spiceCurrent[varName]= v
+          self.spiceCurrent[str(varName)]= v
 
   def v(self, voltageName):
     return self.spiceVoltage[voltageName]
@@ -353,6 +354,17 @@ if __name__ == "__main__":
   print str(v2)
   lin= reader.i('lin')
   print str(lin)
+  print "Voltages"
+  print reader.getVoltageNames()
+  print "Currents"
+  print reader.getCurrentNames()
+
+  reader= spice_read('t/t1.raw')
+  reader.loadSpiceVoltages()
+  v2= reader.v('3')
+  print str(v2)
+  x1_3= reader.v('x1.3')
+  print str(x1_3)
   print "Voltages"
   print reader.getVoltageNames()
   print "Currents"
