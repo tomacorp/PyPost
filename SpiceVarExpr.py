@@ -43,6 +43,16 @@ class SpiceVarExpr:
   # The non-matching text passes through.
 
   # Backtracking could be implemented with untokenize()
+
+  # Problem: the tokenizer is not returning x1.3, it is returning x1.
+  # Then the closing parenthesis, which is expected next, is not found.
+  # This causes the state machine to backtrack and not translate to r['x1.3'] as it should.
+  # Need to either fix the generate_tokens or the state machine to know to be able to
+  # take more tokens to add to the state 'inWaveVar' before the closing paren.
+  # Since generate_tokens is a big complicated module that someone else did,
+  # need to handle the states here.
+  #
+  #
   def fixWaveFormVariableNames(self, txt):
     self.outExpr= ''
     lastToknum= 0
@@ -71,6 +81,11 @@ class SpiceVarExpr:
           else:
             self.outExpr += self.waveType + '('
             self.fsm.reset()
+
+        # This appends subcircuit extended net names while still inside parens.
+        elif self.fsm.current == 'closeParen' and tokval != ')':
+          self.waveName += tokval
+          continue
 
         elif self.fsm.current== 'closeParen':
           if toknum == OP and tokval == ')':
@@ -101,12 +116,23 @@ if __name__ == "__main__":
   print "Input: " + inputExpression
   print "Output: " + outputExpression
   print "-----"
+
   inputExpression= '3.04m+v1+v(a)+v(b)+i(r1)*10k'
   outputExpression= sve.fixWaveFormVariableNames(inputExpression)
   print "Input: " + inputExpression
   print "Output: " + outputExpression
 
   inputExpression= ')'
+  outputExpression= sve.fixWaveFormVariableNames(inputExpression)
+  print "Input: " + inputExpression
+  print "Output: " + outputExpression
+
+  inputExpression= 'v(x1.3)'
+  outputExpression= sve.fixWaveFormVariableNames(inputExpression)
+  print "Input: " + inputExpression
+  print "Output: " + outputExpression
+
+  inputExpression= 'i(l.x1.l1)'
   outputExpression= sve.fixWaveFormVariableNames(inputExpression)
   print "Input: " + inputExpression
   print "Output: " + outputExpression

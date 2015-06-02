@@ -118,9 +118,9 @@ class CommandInterp:
         message= "Circuit name has not been set yet"
 
     elif cmd == 'di':
-      self.displaySweepVar()
-      self.displayVoltages()
-      self.displayCurrents()
+      message = self.displaySweepVar()
+      message = message + self.displayVoltages()
+      message = message + self.displayCurrents()
       self.pyCode= "print(r.getVoltageNames())\nprint(r.getCurrentNames())"
 
     elif cmd == 'history':
@@ -150,22 +150,28 @@ class CommandInterp:
 
   def displaySweepVar(self):
     if self.sc.get_xvar() is not None:
-      print("Sweep variable is " + str(self.sc.get_xvar()))
+      message= "Sweep variable: " + str(self.sc.get_xvar()) + "\n"
+    else:
+      message= "# No sweep variable\n"
+    return message
 
   def displayVoltages(self):
     if 'r' in globals() and r is not None:
+      message= ''
       for voltage in r.getVoltageNames():
-        print("v(" + str(voltage) + ")")
+        message= message + "v(" + str(voltage) + ")\n"
     else:
-      print("No voltage variables")
+      message= "# No voltage variables\n"
+    return message
 
   def displayCurrents(self):
     if 'r' in globals() and r is not None:
-      # for voltage in self._globals['r'].getVoltageNames():
+      message= ''
       for voltage in r.getCurrentNames():
-        print("i(" + str(voltage) + ")")
+        message = message + "i(" + str(voltage) + ")\n"
     else:
-      print("No current variables")
+      message= "# No current variables\n"
+    return message
 
   def executeLongCommand(self, longCmd, cmdText):
     cmd= longCmd.group(1)
@@ -349,11 +355,11 @@ class CommandInterp:
         self.executeCmd(cmdText)
 
   def graphExpr(self, arg, cmdText):
-    plotExpr= arg
+    userPlotExpr= arg
     res= None
     fsz= 12
     message= ''
-    plotExpr= self.sve.fixWaveFormVariableNames(plotExpr)
+    plotExpr= self.sve.fixWaveFormVariableNames(userPlotExpr)
 
     res, success= self.evaluator.runEval(cmdText, res, plotExpr)
     if not success:
