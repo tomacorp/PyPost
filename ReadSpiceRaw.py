@@ -322,21 +322,53 @@ class spice_read(object):
 
       for j,d in enumerate(p.get_datavectors()):
         v = d.get_data()
-        voltageRE= re.match(r'v\(([^\)]+)\)', d.name)
+        variableName= d.name
+        variableName= variableName.lower()
+
+        voltageRE= re.match(r'[vV]\(([^\)]+)\)', variableName)
         if voltageRE:
           varName= voltageRE.group(1)
           self.spiceVoltage[str(varName)]= v
           print("Loading spice voltage name: " + str(varName))
-        currentRE= re.match(r'i\(([^\)]+)\)', d.name)
+          continue
+
+        currentRE= re.match(r'[iI]\(([^\)]+)\)', variableName)
         if currentRE:
           varName= currentRE.group(1)
           self.spiceCurrent[str(varName)]= v
+          continue
+
+        currentREXyce= re.match(r'([^#]+)#branch$', variableName)
+        if currentREXyce:
+          varName= currentREXyce.group(1)
+          if ':' in varName:
+            # print("Loading Xyce-style current name " + str(varName))
+            subcktFields = varName.split(':')
+            endIdx= len(subcktFields) - 1
+            subcktFields[endIdx]= str(subcktFields[0]) + str(subcktFields[endIdx])
+            varName= '.'.join(subcktFields)
+            # print("Translated Xyce-style current name to " + str(varName))
+          self.spiceCurrent[str(varName)]= v
+          continue
+
+        if ':' in variableName:
+          varName= variableName.replace(':','.')
+          self.spiceVoltage[str(varName)]= v
+          continue
 
   def v(self, voltageName):
-    return self.spiceVoltage[voltageName]
+    if voltageName not in self.spiceVoltage:
+      print "Error: voltage " + str(voltageName) + " not found in raw file"
+      return ''
+    else:
+      return self.spiceVoltage[voltageName]
 
   def i(self, currentName):
-    return self.spiceCurrent[currentName]
+    if currentName not in self.spiceCurrent:
+      print "Error: current " + str(currentName) + " not found in raw file"
+      return ''
+    else:
+      return self.spiceCurrent[currentName]
 
   def t(self):
     return self.spiceScale
@@ -347,25 +379,55 @@ class spice_read(object):
   def getCurrentNames(self):
     return self.spiceCurrent.keys()
 
-if __name__ == "__main__":
-  reader= spice_read('ngtest.raw')
-  reader.loadSpiceVoltages()
-  v2= reader.v('v2')
-  print str(v2)
-  lin= reader.i('lin')
-  print str(lin)
-  print "Voltages"
-  print reader.getVoltageNames()
-  print "Currents"
-  print reader.getCurrentNames()
 
-  reader= spice_read('t/t1.raw')
-  reader.loadSpiceVoltages()
-  v2= reader.v('3')
-  print str(v2)
-  x1_3= reader.v('x1.3')
-  print str(x1_3)
+
+if __name__ == "__main__":
+
+  # TODO: Should include the netlists inline, and test with the
+  # modules to run the available simulators on all the netlists.
+
+  reader1= spice_read('ngtest.raw')
+  reader1.loadSpiceVoltages()
+  r1v2= reader1.v('v2')
+  print str(r1v2)
+  r1lin= reader1.i('lin')
+  print str(r1lin)
   print "Voltages"
-  print reader.getVoltageNames()
+  print reader1.getVoltageNames()
   print "Currents"
-  print reader.getCurrentNames()
+  print reader1.getCurrentNames()
+
+  reader2= spice_read('t/t1.raw')
+  reader2.loadSpiceVoltages()
+  r2v2= reader2.v('3')
+  print str(r2v2)
+  r2x1_3= reader2.v('x1.3')
+  print str(r2x1_3)
+  print "Voltages"
+  print reader2.getVoltageNames()
+  print "Currents"
+  print reader2.getCurrentNames()
+
+  print('Xyce example 1')
+  reader3= spice_read('t/x1.raw')
+  reader3.loadSpiceVoltages()
+  r3v2= reader3.v('3')
+  print str(r3v2)
+  r3x1_3= reader3.v('x1.3')
+  print str(r3x1_3)
+  print "Voltages"
+  print reader3.getVoltageNames()
+  print "Currents"
+  print reader3.getCurrentNames()
+
+  print('Xyce example 2')
+  reader3= spice_read('t/xx1.raw')
+  reader3.loadSpiceVoltages()
+  r3v2= reader3.v('3')
+  print str(r3v2)
+  r3x1_3= reader3.v('x1.3')
+  print str(r3x1_3)
+  print "Voltages"
+  print reader3.getVoltageNames()
+  print "Currents"
+  print reader3.getCurrentNames()

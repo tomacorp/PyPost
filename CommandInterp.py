@@ -27,13 +27,6 @@ import SpiceVarExpr
 # label time, date
 # ticks, grid, number of divisions
 
-# TODO: Implement di
-#       Something like:
-#         r.spiceVoltage.keys()
-#         res = ['v1', 'v2', 'v3']
-#         r.spiceCurrent.keys()
-#         res = ['lin', 'vin']
-
 # TODO: Look at how subcircuits are implemented for di and voltage graphing, consider push/pop
 
 # TODO: Check for presence of raw data in r before substituting and graphing with v(v1)
