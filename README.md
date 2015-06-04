@@ -41,15 +41,14 @@ Graph using the same axes.
 
 `<var>=<expr>`
 
-Set a variable <var> to the expression <expr>.
-_Example:_
+Set a variable `<var>` to the expression `<expr>`.
 
-`
+_Example:_
     set xname x
     n=201
     x=linspace(0, 2*pi, n)
     gr sin(10*x)*hanning(n)
-`
+
 
 ## Set Commands
 
@@ -116,7 +115,7 @@ Not implemented yet.
 ## Running scripts
 
 `include <filename>`
-Reads the file at <filename> and executes it as a list of commands as if they were typed in.
+Reads the file at `<filename>` and executes it as a list of commands as if they were typed in.
 
 `. <filename>`
 Synonym for include. Saves typing.
