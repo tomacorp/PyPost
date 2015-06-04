@@ -44,10 +44,12 @@ Graph using the same axes.
 Set a variable <var> to the expression <expr>.
 _Example:_
 
-`set xname x
-n=201
-x=linspace(0, 2*pi, n)
-gr sin(10*x)*hanning(n)`
+`
+    set xname x
+    n=201
+    x=linspace(0, 2*pi, n)
+    gr sin(10*x)*hanning(n)
+`
 
 ## Set Commands
 
