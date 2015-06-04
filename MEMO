@@ -20,4 +20,7 @@ git push origin master
 # Get the latest from github:
 git pull origin master
 
-
+# When updating for pil, it pulled python 2.7.10 and needed new pyside and matplotlib.
+conda install pil
+conda install pyside
+conda install matplotlib

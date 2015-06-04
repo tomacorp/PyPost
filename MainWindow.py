@@ -38,6 +38,12 @@ from EngMplCanvas import EngMplCanvasDict
 # Using factories and other Java-esque patterns:
 #   http://python-3-patterns-idioms-test.readthedocs.org/en/latest/Factory.html
 
+# BUG:
+#   ci t/ngtest
+#   gr v(1)
+# This crashes the program. Should prevent this with try/catch somewhere.
+# Looks like this is actually due to t/ngtest.raw does not exist.
+
 # TODO:
 #
 #   Add a 2-D plot function. Look at code from therm.py, incorporate this in an
