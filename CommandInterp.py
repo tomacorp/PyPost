@@ -6,6 +6,11 @@ from math import *
 from tokenize import *
 from numpy import *
 from numpy.fft import *
+import skimage
+from skimage import data
+import imghdr
+import ntpath
+
 
 import re
 import numpy as np
@@ -75,7 +80,7 @@ class CommandInterp:
     cmdText=cmdText.lstrip()
     print("Command: " + cmdText)
     message= ''
-    longCmd= re.match(r'^(ci|gr|gs|set|si|history|readh5|include|\.) (.*)', cmdText)
+    longCmd= re.match(r'^(ci|gr|gs|set|si|history|readh5|include|\.|img) (.*)', cmdText)
     shortCmd= re.match(r'^(ci|set|si|di|history)$', cmdText)
     if longCmd is not None:
       message= self.executeLongCommand(longCmd, cmdText)
@@ -210,8 +215,32 @@ class CommandInterp:
         print(message)
         self.pyCode= "# " + message
     elif cmd == 'include' or cmd == '.':
-      self.include(arg)
-      self.pyCode='includeFile(' + arg + ')'
+      if os.path.isfile(arg):
+        self.include(arg)
+        self.pyCode='includeFile(' + arg + ')'
+      else:
+        message= 'Include file "' + arg + '" not found in command: ' + str(cmdText)
+        print(message)
+        self.pyCode= "# " + message
+    elif cmd == 'img':
+      if os.path.isfile(arg):
+        print("Display image: " + str(arg))
+        fileType= imghdr.what(arg)
+        fileExtension= '.' + fileType
+        if (arg.endswith(fileExtension)):
+          varName= ntpath.basename(arg)
+          varName, extension= os.path.splitext(varName)
+        else:
+          varName= 'image1'
+        print("Image is in variable: " + str(varName))
+        self._globals[varName]= skimage.data.imread(arg)
+        self.setPostParameter("graphdev " + str(varName))
+        self.sc.plt.imshow(self._globals[varName])
+        self.sc.show()
+      else:
+        message= 'Image file "' + arg + '" not found in command: ' + str(cmdText)
+        print(message)
+        self.pyCode= "# " + message
     return message
 
   def isEngrNumber(self, expression):

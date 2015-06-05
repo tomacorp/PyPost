@@ -60,6 +60,7 @@ from EngMplCanvas import EngMplCanvasDict
 #   Program launch from file that contains state
 #   Graphical SVG output, esp useful over HTTP as web page
 
+#   TODO Graphing commands to implement
 #   gr somevector
 #     should plot the vector versus its index if the x-axis is otherwise undefined.
 #   Need a command to set the x-axis variable.
