@@ -377,6 +377,10 @@ class CommandInterp:
         self.executeCmd(cmdText)
 
   def graphExpr(self, arg, cmdText):
+    # TODO: Add image graphing to this.
+    # Currently for an image this returns:
+    #   Error: X-axis has 1021 points and Y-axis has 72 points
+
     userPlotExpr= arg
     res= None
     fsz= 12

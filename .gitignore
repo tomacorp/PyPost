@@ -27,6 +27,7 @@
 *.ppm
 *.xbm
 *.xpm
+*.jpg
 *.sqlite
 *.wpu
 x

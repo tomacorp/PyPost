@@ -142,27 +142,55 @@ class EngEvaluate():
     except:
       print "Could not parse " + txtEng
 
+  """This routine substitutes a Numpy array for Python array.
+    For example:
+    pyFromVec([a,b,c])
+    returns np.array([a,b,c])
+    However, a numpy reference like x[1,3] should not be turned into np.array(x[1,3])
+  """
   def pyFromVec(self, txt):
     pyExpr= ''
     lastToken= ''
     lastToknum= 0
     invec= False
+    inNumpyVar= False
+    inNumpyVector= False
     g = generate_tokens(StringIO(txt).readline)
     try:
       for toknum, tokval, _, _, _  in g:
         if (toknum == OP and tokval == '['):
-          vec= 'np.array(['
+          if inNumpyVar:
+            inNumpyVector= True
+            pyExpr = pyExpr + '['
+          else:
+            vec= 'np.array(['
           invec= True
         elif (invec and toknum == OP and tokval == ','):
-          vec= vec + lastToken + ','
+          if inNumpyVector:
+            pyExpr = pyExpr + lastToken + ','
+          else:
+            vec= vec + lastToken + ','
           lastToken= ''
         elif (invec and toknum == OP and tokval == ']'):
+          if inNumpyVector:
+            inNumpyVector= False
+            inNumpyVar= False
+            pyExpr = pyExpr + lastToken + ']'
+          else:
+            vec = vec + lastToken + '])'
+            pyExpr = pyExpr + vec
           invec= False
-          vec = vec + lastToken + '])'
-          pyExpr = pyExpr + vec
+          lastToken= ''
         elif (invec):
           lastToken += str(tokval)
+        elif (toknum == NAME):
+          if tokval in self._globals:
+            inNumpyVar= True
+          pyExpr = pyExpr + tokval
+            # All bets are off, just return the input
+            # return txt
         else:
+          inNumpyVar= False
           pyExpr = pyExpr + tokval
     except:
       print "Could not parse " + txtEng

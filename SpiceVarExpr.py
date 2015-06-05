@@ -52,7 +52,7 @@ class SpiceVarExpr:
   # Since generate_tokens is a big complicated module that someone else did,
   # need to handle the states here.
   #
-  #
+  # This routine returns whitespace, which isn't always what is wanted.
   def fixWaveFormVariableNames(self, txt):
     self.outExpr= ''
     lastToknum= 0
@@ -98,8 +98,13 @@ class SpiceVarExpr:
         self.outExpr += tokval
 
         if toknum == ENDMARKER:
-          return self.outExpr
-
+          # If the only difference is that whitespace has been removed, restore the original
+          out= txt
+          out = txt.replace(" ", "")
+          if out == self.outExpr:
+            return txt
+          else:
+            return self.outExpr
       else:
         print "Unexpected end of token parsing."
         return txt
@@ -109,7 +114,14 @@ class SpiceVarExpr:
 
 if __name__ == "__main__":
 
+  # TODO: learn a python testing framework and use it here
   sve= SpiceVarExpr()
+
+  inputExpression= 'yellow[20 30]'
+  outputExpression= sve.fixWaveFormVariableNames(inputExpression)
+  print "Input: " + inputExpression
+  print "Output: " + outputExpression
+  print "-----"
 
   inputExpression= 'v(1a)+2+v(v1)+av(v2)+vi(i)+i(i)'
   outputExpression= sve.fixWaveFormVariableNames(inputExpression)
