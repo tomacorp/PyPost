@@ -34,6 +34,9 @@ Expressions can have side effects, since much of the Python language and numpy i
 `gr <expr>`
 
 Graphs and expression versus xname. If there is no x-axis, a list of integers starting at 0 are used instead.
+If the expression is an image, the image is displayed.
+For now it is not possible to display an image on top of an existing graph.
+Use the `set graphdev` command to create a new
 
 `gs`
 
@@ -79,7 +82,17 @@ Sets the x axis to use autoranging.
 Sets the sweep variable (x axis) to the variable <var>
 _Example:_
 
-`set xname x`
+    `set xname x`
+
+`set graphdev winname`
+
+If the window winname already exists, the set graphdev command
+sets this window to the active graph. If the window with this
+name does not exist yet, it creates a new window for drawing graphs
+or images. The window will appear when a graph or image is drawn on it.
+The name of the the default graph which appears in the PyPost interface
+is PyPost_1. It is not possible at this time to draw an image in this
+area.
 
 ## Simulator Commands
 
@@ -96,7 +109,7 @@ Runs the circuit simulator on the specified file.
 Sets the simulator base file name to <basename>.
 This example sets the simulation basename to ngtest in the directory t:
 
-`ci t/ngtest`
+    `ci t/ngtest`
 
 The simulator uses the basename to create file names.
 
@@ -114,6 +127,13 @@ The arrow keys also work to recall previous commands.
 `readh5`
 Not implemented yet.
 
+`img <filename>`
+Reads an image file into a variable.
+The name of the variable is the basename of the file.
+For example, the command:
+    `img t/yellow.png`
+reads the file in the subdirectory `t` into the variable `yellow`.
+
 ## Running scripts
 
 `include <filename>`
@@ -124,3 +144,19 @@ Synonym for include. Saves typing.
 
 `__di__`
 Displays the simulation variables that are available to be plotted or used in expressions.
+
+## Mouse commands
+
+The mouse scroll-wheel provides zooming and panning for graphs.
+Depending on where the mouse pointer is located, the wheel has different actions.
+
+Inside the graph area, panning and zooming occurs on the X-axis.
+In the left and right sides of the graph, the scroll-wheel provides panning.
+In the middle area of the graph, the scroll-wheel provides zooming.
+
+Outside the graph area, panning and zooming occurs on the Y-axis.
+In the top and bottom area outside of the graph, the scroll-wheel provides panning.
+In the middle area outside of the graph, the scroll-wheel provides zooming.
+
+Clicking on a waveform in the graph sets a marker at the X position of the mouse pointer,
+and it reports the value of the waveform at the Y position corresponding to this X position.

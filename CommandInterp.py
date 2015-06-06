@@ -180,7 +180,7 @@ class CommandInterp:
       self.pyCode= "sim.setCircuitName(" + str(arg) + ")\nsim.simulate()"
       message= self.setCircuitName(arg)
       message= message + "\n" + self.simulate(arg)
-    if cmd == 'ci':
+    elif cmd == 'ci':
       self.pyCode= "sim.setCircuitName(" + str(arg) + ")"
       message= self.setCircuitName(arg)
       self.readRawFile()
@@ -234,9 +234,9 @@ class CommandInterp:
           varName= 'image1'
         print("Image is in variable: " + str(varName))
         self._globals[varName]= skimage.data.imread(arg)
-        self.setPostParameter("graphdev " + str(varName))
-        self.sc.plt.imshow(self._globals[varName])
-        self.sc.show()
+        # self.setPostParameter("graphdev " + str(varName))
+        # self.sc.plt.imshow(self._globals[varName])
+        # self.sc.show()
       else:
         message= 'Image file "' + arg + '" not found in command: ' + str(cmdText)
         print(message)
@@ -376,11 +376,9 @@ class CommandInterp:
       for cmdText in handle:
         self.executeCmd(cmdText)
 
+  # TODO: Might need two types of plots, one for images and one for graphs
+  # There are bugs when one goes in place of the other.
   def graphExpr(self, arg, cmdText):
-    # TODO: Add image graphing to this.
-    # Currently for an image this returns:
-    #   Error: X-axis has 1021 points and Y-axis has 72 points
-
     userPlotExpr= arg
     res= None
     fsz= 12
@@ -401,21 +399,28 @@ class CommandInterp:
       typeXAxis= None
 
     typeYAxis= str(type(res))
-    if "<type 'numpy.ndarray'>" in typeYAxis:
-      yAxisPts= len(res)
+    if (typeYAxis == "<type 'numpy.ndarray'>" and len(shape(res))==3):
+      message= "Graph image: " + str(userPlotExpr)
+      self.sc.plt.imshow(res)
+      self.sc.show()
+      self.pyCode = 'graph.graphImage()'
+      return message
     else:
-      yAxisPts= 1
-
-    if typeXAxis == None:
-      self.sc.plotYList(res, arg, self.sc.get_title())
-    else:
-      if xAxisPts == yAxisPts:
-        self.sc.plotXYList(self._globals[self.sc.get_xvar()], res, self.sc.get_xvar(), arg, self.sc.get_title())
+      if "<type 'numpy.ndarray'>" in typeYAxis:
+        yAxisPts= len(res)
       else:
-        plX= 'point' if xAxisPts == 1 else 'points'
-        plY= 'point' if yAxisPts == 1 else 'points'
-        message = "Error: X-axis has " + str(xAxisPts) + " " + plX + " and Y-axis has " + str(yAxisPts) + " " + plY
-    return message
+        yAxisPts= 1
+
+      if typeXAxis == None:
+        self.sc.plotYList(res, arg, self.sc.get_title())
+      else:
+        if xAxisPts == yAxisPts:
+          self.sc.plotXYList(self._globals[self.sc.get_xvar()], res, self.sc.get_xvar(), arg, self.sc.get_title())
+        else:
+          plX= 'point' if xAxisPts == 1 else 'points'
+          plY= 'point' if yAxisPts == 1 else 'points'
+          message = "Error: X-axis has " + str(xAxisPts) + " " + plX + " and Y-axis has " + str(yAxisPts) + " " + plY
+      return message
 
   def setPostParameter(self, arg):
     regexSet= re.match(r'^(xname|title|xl|yl|graphdev) (.*)', arg)

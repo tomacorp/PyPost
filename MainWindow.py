@@ -45,6 +45,10 @@ from EngMplCanvas import EngMplCanvasDict
 # Looks like this is actually due to t/ngtest.raw does not exist.
 
 # TODO:
+#   When clicking a marker, have the marker save the XY coordinates in a variable.
+#   Show the XY coordinates in the transcript.
+
+# TODO:
 #
 #   Add a 2-D plot function. Look at code from therm.py, incorporate this in an
 #     interactive way, both with png and hdf5 data.
