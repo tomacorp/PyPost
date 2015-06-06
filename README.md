@@ -82,7 +82,9 @@ Sets the x axis to use autoranging.
 Sets the sweep variable (x axis) to the variable <var>
 _Example:_
 
-    `set xname x`
+```
+set xname x
+```
 
 `set graphdev winname`
 
@@ -109,7 +111,7 @@ Runs the circuit simulator on the specified file.
 Sets the simulator base file name to <basename>.
 This example sets the simulation basename to ngtest in the directory t:
 
-    `ci t/ngtest`
+`ci t/ngtest`
 
 The simulator uses the basename to create file names.
 
@@ -130,8 +132,11 @@ Not implemented yet.
 `img <filename>`
 Reads an image file into a variable.
 The name of the variable is the basename of the file.
-For example, the command:
-    `img t/yellow.png`
+_Example:_
+
+```
+img t/yellow.png
+```
 reads the file in the subdirectory `t` into the variable `yellow`.
 
 ## Running scripts
