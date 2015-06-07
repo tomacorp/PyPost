@@ -5,3 +5,6 @@ set graphdev vout
 gr v(v3)*v(v2)/3.0
 set graphdev PyPost_1
 gs v(v1)
+set graphdev layout
+img t/yellow.png
+gr yellow

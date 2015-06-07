@@ -24,7 +24,8 @@ from matplotlib.figure import Figure
 import CommandInterp
 import LineEditHist
 import EngMplCanvas
-from EngMplCanvas import EngMplCanvasDict
+import MplCanvasDict
+import ImgMplCanvas
 
 # conda install pyside
 # pip install fysom
@@ -105,7 +106,7 @@ class Post(QMainWindow):
   def __init__(self, parent=None):
     super(Post, self).__init__(parent)
 
-    self.graphs= EngMplCanvasDict()
+    self.graphs= MplCanvasDict.MplCanvasDict()
 
     self.table = MainWin(self)
     self.setCentralWidget(self.table)
