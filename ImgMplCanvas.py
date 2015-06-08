@@ -186,6 +186,8 @@ if __name__ == "__main__":
     label.setAlignment(Qt.AlignHCenter)
     label.setParent(frame)
 
+
+
     # Buttons take a lot of code!
     buttonGroup = QtGui.QButtonGroup()
     button1= QtGui.QRadioButton("Img")
@@ -209,6 +211,8 @@ if __name__ == "__main__":
     vbox.addWidget(button4)
     vbox.addStretch(1)
     groupBox.setLayout(vbox)
+
+
 
     layout = QtGui.QVBoxLayout()
     layout.addWidget(canvas)
