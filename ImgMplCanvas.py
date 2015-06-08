@@ -58,7 +58,7 @@ if __name__ == "__main__":
     """
     This is the easy pyplot way to display an image.
     It also has some nice features, like panning and zooming.
-    It is not the PySide way of doing things,
+    It is not as extensible as PySide,
     but it makes a nice reference for debugging.
     """
     print("Display image: " + str(fn) + " using Tk")
@@ -69,7 +69,8 @@ if __name__ == "__main__":
   def displayImagePyside(fn, imageName='image'):
     """
     This is the simplest way to use PySide to display an image in a Figure subplot.
-    There is no layout code, other than hand-coding based on the size of the image.
+    There is no layout code, other than hand-coding the FigureCanvas size and
+    QMainWindow size based on the size of the image.
     """
     print("Display image: " + str(fn) + " using PySide")
     img= skimage.data.imread(fn)
@@ -149,6 +150,81 @@ if __name__ == "__main__":
 
     sys.exit(app.exec_())
 
+  def displayImagePysideFrameButtons(fn, imageName='image'):
+    """
+    This adds a QFrame and QLabel to the PySide interface, and a simple layout.
+    It also adds buttons to manipulate the image.
+    """
+    print("Display image: " + str(fn) + " with frame and label using PySide")
+    img= skimage.data.imread(fn)
+
+    app = QApplication(sys.argv)
+
+    height, width, depth= shape(img)
+    fig = Figure(figsize=(width, height), dpi=100)
+
+    axes = fig.add_subplot(111)
+    axes.set_xlim(0, width)
+    axes.set_ylim(0, height)
+    axes.imshow(img)
+
+    main = QtGui.QMainWindow()
+    main.setGeometry(0, 100, 200+int(width*1.4), 200+int(height*1.4))
+    main.setWindowTitle(imageName)
+
+    frame= QtGui.QFrame()
+    frame.setFrameShape(QtGui.QFrame.StyledPanel)
+    frame.setParent(main)
+
+    canvas = FigureCanvas(fig)
+    canvas.setParent(frame)
+    canvas.setMinimumSize(100+int(width*1.4), 100+int(height*1.4))
+
+    label= QtGui.QLabel()
+    # when calling QtGui.QLabel.setText() with a string, must use unicode eg u"myname"
+    label.setText(imageName)
+    label.setAlignment(Qt.AlignHCenter)
+    label.setParent(frame)
+
+    # Buttons take a lot of code!
+    buttonGroup = QtGui.QButtonGroup()
+    button1= QtGui.QRadioButton("Img")
+    button2= QtGui.QRadioButton("Marker")
+    button3= QtGui.QRadioButton("Clear")
+    button4= QtGui.QRadioButton("Plot")
+
+    button1.setChecked(True)
+
+    buttonGroup.addButton(button1)
+    buttonGroup.addButton(button2)
+    buttonGroup.addButton(button3)
+    buttonGroup.addButton(button4)
+
+    groupBox = QtGui.QGroupBox("Canvas Control Buttons")
+
+    vbox = QHBoxLayout()
+    vbox.addWidget(button1)
+    vbox.addWidget(button2)
+    vbox.addWidget(button3)
+    vbox.addWidget(button4)
+    vbox.addStretch(1)
+    groupBox.setLayout(vbox)
+
+    layout = QtGui.QVBoxLayout()
+    layout.addWidget(canvas)
+    layout.addWidget(label)
+    layout.addWidget(groupBox)
+
+    layout.setStretchFactor(canvas, 1.0)
+
+    frame.setLayout(layout)
+    frame.show()
+
+    main.setCentralWidget(frame)
+    main.show()
+
+    sys.exit(app.exec_())
+
 
   # The test starts here
   print("ImgMplCanvas class test")
@@ -166,10 +242,14 @@ if __name__ == "__main__":
 
   useTk= False
   useFrame= False
+  useNoFrame= False
 
   if useTk:
     displayImageTk(fn, imageName=name)
   elif useFrame:
     displayImagePysideFrame(fn, imageName=name)
-  else:
+  elif useNoFrame:
     displayImagePyside(fn, imageName=name)
+  else:
+    displayImagePysideFrameButtons(fn, imageName=name)
+
