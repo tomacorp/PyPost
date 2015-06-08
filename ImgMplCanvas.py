@@ -35,6 +35,9 @@ if __name__ == "__main__":
   from matplotlib import pyplot as plt
   import numpy as np
 
+  import EngMplCanvas
+  import MplCanvasDict
+
   def getImageName(fn):
 
     """I like a lot of error checking on files.
@@ -145,8 +148,6 @@ if __name__ == "__main__":
     layout.setStretchFactor(canvas, 1.0)
 
     frame.setLayout(layout)
-
-
     frame.show()
 
     main.setCentralWidget(frame)
@@ -198,8 +199,29 @@ if __name__ == "__main__":
       def actionClear(self):
         print("By setting a breakpoint here, the image can be manipulated interactively")
 
+      def actionMouse(self, event):
+        x= event.xdata
+        y= event.ydata
+        if (x is None or y is None):
+          return
+        xint= int(x + 0.5)
+        yint= int(y + 0.5)
+        main.statusBar().showMessage(str(xint) + ', ' + str(yint))
+        if event.button == 1:
+          print("XY " + str(xint) + ', ' + str(yint))
+
+      # This draws a graph on top of the bitmap.
+      # Since the axes are what is being drawn, not really the data,
+      # Redrawing the bitmap does not overwrite the graph, which is drawn
+      # in after the bitmap and so is on top.
       def actionPlot(self):
         print("Plot!")
+        x= linspace(0,2*pi,100)*20
+        y= sin(x/20)*30+40
+        self.axes.plot(x, y)
+        # self.axes.set_title("Graph", fontsize=12)
+        self.canvas.draw()
+        self.canvas.show()
 
       # These delegates connect the callbacks to the program data
       def setImg(self, img):
@@ -214,6 +236,12 @@ if __name__ == "__main__":
       def setFn(self, fn):
         self.fn= fn
 
+      def setFig(self, fig):
+        self.fig= fig
+
+      def setMain(self, main):
+        self.main= main
+
     img= skimage.data.imread(fn)
 
     app = QApplication(sys.argv)
@@ -224,11 +252,13 @@ if __name__ == "__main__":
     axes = fig.add_subplot(111)
     axes.set_xlim(0, width)
     axes.set_ylim(0, height)
+    axes.set_title("Layout", fontsize=12)
     axes.imshow(img)
 
     main = QtGui.QMainWindow()
     main.setGeometry(0, 100, 200+int(width*1.4), 200+int(height*1.4))
     main.setWindowTitle(imageName)
+    main.statusBar().showMessage('Loading...')
 
     frame= QtGui.QFrame()
     frame.setFrameShape(QtGui.QFrame.StyledPanel)
@@ -260,11 +290,12 @@ if __name__ == "__main__":
     bActions.setCanvas(canvas)
     bActions.setAxes(axes)
     bActions.setFn(fn)
+    bActions.setFig(fig)
+    bActions.setMain(main)
     button1.clicked.connect(bActions.actionRemoveImg)
     button2.clicked.connect(bActions.actionMarker)
     button3.clicked.connect(bActions.actionClear)
     button4.clicked.connect(bActions.actionPlot)
-
     vbox = QHBoxLayout()
     vbox.addWidget(button1)
     vbox.addWidget(button2)
@@ -272,6 +303,9 @@ if __name__ == "__main__":
     vbox.addWidget(button4)
     vbox.addStretch(1)
     groupBox.setLayout(vbox)
+    # End of Buttons
+
+    canvas.mpl_connect('motion_notify_event', bActions.actionMouse)
 
     layout = QtGui.QVBoxLayout()
     layout.addWidget(canvas)
@@ -284,6 +318,7 @@ if __name__ == "__main__":
     frame.show()
 
     main.setCentralWidget(frame)
+    main.statusBar().showMessage('Ready')
     main.show()
 
     sys.exit(app.exec_())
