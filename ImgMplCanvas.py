@@ -28,10 +28,12 @@ class ImgMplCanvas(FigureCanvas):
   def __init__(self, parent=None, width=5, height=4, dpi=100):
     pass
 
+
 if __name__ == "__main__":
 
   import os.path
   from matplotlib import pyplot as plt
+  import numpy as np
 
   def getImageName(fn):
 
@@ -143,6 +145,8 @@ if __name__ == "__main__":
     layout.setStretchFactor(canvas, 1.0)
 
     frame.setLayout(layout)
+
+
     frame.show()
 
     main.setCentralWidget(frame)
@@ -150,18 +154,72 @@ if __name__ == "__main__":
 
     sys.exit(app.exec_())
 
+
+    """
+      This adds a QFrame and QLabel to the PySide interface, and a simple layout.
+
+      It also adds buttons to manipulate the image.
+
+      Once there are buttons, simple things like exiting or printing can be done as long
+      as they don't need much interaction program variables.
+      If there are actions that work on variables, objects and classes are needed.
+
+      This is the explosion of complexity that accompanies the manipulation of
+      program state.
+
+      Will an inner class will work to keep the example tidy?
+      Yes, if lots of delegates counts as tidy.
+    """
+
+
   def displayImagePysideFrameButtons(fn, imageName='image'):
-    """
-    This adds a QFrame and QLabel to the PySide interface, and a simple layout.
-    It also adds buttons to manipulate the image.
-    """
     print("Display image: " + str(fn) + " with frame and label using PySide")
+
+    """
+      These definitions can be local inside the function like this or outside.
+      Both work.
+    """
+    class buttonActions:
+      def __init__(self):
+        self.status= 1
+
+      def actionRemoveImg(self):
+        print("Removing Image")
+        self.img= np.zeros(shape(self.img))
+        self.axes.imshow(self.img)
+        self.canvas.draw()
+
+      def actionMarker(self):
+        print("Add image")
+        self.img = skimage.data.imread(self.fn)
+        self.axes.imshow(self.img)
+        self.canvas.draw()
+
+      def actionClear(self):
+        print("By setting a breakpoint here, the image can be manipulated interactively")
+
+      def actionPlot(self):
+        print("Plot!")
+
+      # These delegates connect the callbacks to the program data
+      def setImg(self, img):
+        self.img= img
+
+      def setCanvas(self, canv):
+        self.canvas= canv
+
+      def setAxes(self, ax):
+        self.axes= ax
+
+      def setFn(self, fn):
+        self.fn= fn
+
     img= skimage.data.imread(fn)
 
     app = QApplication(sys.argv)
 
     height, width, depth= shape(img)
-    fig = Figure(figsize=(width, height), dpi=100)
+    fig = Figure(figsize=(width, height), dpi=72)
 
     axes = fig.add_subplot(111)
     axes.set_xlim(0, width)
@@ -176,6 +234,11 @@ if __name__ == "__main__":
     frame.setFrameShape(QtGui.QFrame.StyledPanel)
     frame.setParent(main)
 
+    """
+    This adds a QFrame and QLabel to the PySide interface, and a simple layout.
+    It also adds buttons to manipulate the image.
+    """
+
     canvas = FigureCanvas(fig)
     canvas.setParent(frame)
     canvas.setMinimumSize(100+int(width*1.4), 100+int(height*1.4))
@@ -186,23 +249,21 @@ if __name__ == "__main__":
     label.setAlignment(Qt.AlignHCenter)
     label.setParent(frame)
 
-
-
-    # Buttons take a lot of code!
-    buttonGroup = QtGui.QButtonGroup()
-    button1= QtGui.QRadioButton("Img")
-    button2= QtGui.QRadioButton("Marker")
-    button3= QtGui.QRadioButton("Clear")
-    button4= QtGui.QRadioButton("Plot")
-
-    button1.setChecked(True)
-
-    buttonGroup.addButton(button1)
-    buttonGroup.addButton(button2)
-    buttonGroup.addButton(button3)
-    buttonGroup.addButton(button4)
-
+    # Buttons
     groupBox = QtGui.QGroupBox("Canvas Control Buttons")
+    button1= QtGui.QPushButton("Remove")
+    button2= QtGui.QPushButton("Restore")
+    button3= QtGui.QPushButton("Clear")
+    button4= QtGui.QPushButton("Plot")
+    bActions= buttonActions()
+    bActions.setImg(img)
+    bActions.setCanvas(canvas)
+    bActions.setAxes(axes)
+    bActions.setFn(fn)
+    button1.clicked.connect(bActions.actionRemoveImg)
+    button2.clicked.connect(bActions.actionMarker)
+    button3.clicked.connect(bActions.actionClear)
+    button4.clicked.connect(bActions.actionPlot)
 
     vbox = QHBoxLayout()
     vbox.addWidget(button1)
@@ -211,8 +272,6 @@ if __name__ == "__main__":
     vbox.addWidget(button4)
     vbox.addStretch(1)
     groupBox.setLayout(vbox)
-
-
 
     layout = QtGui.QVBoxLayout()
     layout.addWidget(canvas)
