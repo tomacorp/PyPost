@@ -24,3 +24,4 @@ git pull origin master
 conda install pil
 conda install pyside
 conda install matplotlib
+conda install twisted

@@ -384,10 +384,15 @@ class CommandInterp:
     fsz= 12
     message= ''
     plotExpr= self.sve.fixWaveFormVariableNames(userPlotExpr)
-
+    grPattern= re.compile(r"g[rs] ([iv]\([^)]+\))")
     res, success= self.evaluator.runEval(cmdText, res, plotExpr)
     if not success:
-      return "Error evaluating plot expression: " + cmdText
+      badGraphCmd= grPattern.match(cmdText)
+      if badGraphCmd:
+        vfunction= badGraphCmd.group(1)
+        return "Error: unrecognized waveform: " + str(vfunction)
+      else:
+        return "Error evaluating plot expression: " + cmdText
 
     if self.sc.get_xvar() in self._globals:
       typeXAxis= str(type(self._globals[self.sc.get_xvar()]))
@@ -419,7 +424,13 @@ class CommandInterp:
         else:
           plX= 'point' if xAxisPts == 1 else 'points'
           plY= 'point' if yAxisPts == 1 else 'points'
-          message = "Error: X-axis has " + str(xAxisPts) + " " + plX + " and Y-axis has " + str(yAxisPts) + " " + plY
+          badGraphCmd= grPattern.match(cmdText)
+          if badGraphCmd:
+            vfunction= badGraphCmd.group(1)
+            message= "Error: unrecognized waveform: " + str(vfunction)
+          else:
+            message =  "Error: X-axis: " + str(self.sc.get_xvar()) + " has " + str(xAxisPts) + " " + plX + "\n"
+            message += "       Y-axis: " + str(cmdText) + " has " + str(yAxisPts) + " " + plY
       return message
 
   def setPostParameter(self, arg):

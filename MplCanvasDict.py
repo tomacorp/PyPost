@@ -24,7 +24,7 @@ import EngMplCanvas
 # TODO: Refactor to take more canvas types.
 
 class MplCanvasDict():
-  def __init__(self, parent=None, width=5, height=4, dpi=100):
+  def __init__(self, parent=None, width=5, height=4, dpi=72):
     self.cd= {}
     self.active= ''
     self.parent= parent
@@ -48,7 +48,7 @@ class MplCanvasDict():
   def getActiveCanvasName(self):
     return self.active
 
-  def create(self, canvasName='', parent=None, width=5, height=4, dpi=100):
+  def create(self, canvasName='', parent=None, width=5, height=4, dpi=72):
     if canvasName == '':
       canvasCount= len(self.cd) + 1
       canvasName= "PyPost_" + str(canvasCount)

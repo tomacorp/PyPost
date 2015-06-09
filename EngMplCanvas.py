@@ -43,7 +43,7 @@ from matplotlib.ticker import EngFormatter
 
 class EngMplCanvas(FigureCanvas):
   """A QWidget that implements Matplotlib"""
-  def __init__(self, parent=None, width=5, height=4, dpi=100):
+  def __init__(self, parent=None, width=5, height=4, dpi=72):
 
     self.yauto= True
     self.ylimlow= -16.0

@@ -25,7 +25,7 @@ import imghdr
 import ntpath
 
 class ImgMplCanvas(FigureCanvas):
-  def __init__(self, parent=None, width=5, height=4, dpi=100):
+  def __init__(self, parent=None, width=5, height=4, dpi=72):
     pass
 
 
@@ -34,9 +34,6 @@ if __name__ == "__main__":
   import os.path
   from matplotlib import pyplot as plt
   import numpy as np
-
-  import EngMplCanvas
-  import MplCanvasDict
 
   def getImageName(fn):
 
@@ -59,19 +56,21 @@ if __name__ == "__main__":
       return None
     return imageName
 
-  def displayImageTk(fn, imageName='image'):
+  # gist
+  def displayImagePyplot(fn, imageName='image'):
     """
     This is the easy pyplot way to display an image.
     It also has some nice features, like panning and zooming.
     It is not as extensible as PySide,
     but it makes a nice reference for debugging.
     """
-    print("Display image: " + str(fn) + " using Tk")
+    print("Display image: " + str(fn) + " using pyplot")
     img= skimage.data.imread(fn)
     plt.imshow(img)
     plt.show()
 
-  def displayImagePyside(fn, imageName='image'):
+  # gist
+  def displayImagePySide(fn, imageName='image'):
     """
     This is the simplest way to use PySide to display an image in a Figure subplot.
     There is no layout code, other than hand-coding the FigureCanvas size and
@@ -83,7 +82,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     height, width, depth= shape(img)
-    fig = Figure(figsize=(width, height), dpi=100)
+    fig = Figure(figsize=(width, height), dpi=72)
 
     axes = fig.add_subplot(111)
     # The next two lines are equivalent to the default axes settings
@@ -106,7 +105,8 @@ if __name__ == "__main__":
 
     sys.exit(app.exec_())
 
-  def displayImagePysideFrame(fn, imageName='image'):
+  # gist
+  def displayImagePySideFrame(fn, imageName='image'):
     """
     This adds a QFrame and QLabel to the PySide interface, and a simple layout.
     """
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     height, width, depth= shape(img)
-    fig = Figure(figsize=(width, height), dpi=100)
+    fig = Figure(figsize=(width, height), dpi=72)
 
     axes = fig.add_subplot(111)
     axes.set_xlim(0, width)
@@ -173,7 +173,7 @@ if __name__ == "__main__":
     """
 
 
-  def displayImagePysideFrameButtons(fn, imageName='image'):
+  def displayImagePySideFrameButtons(fn, imageName='image'):
     print("Display image: " + str(fn) + " with frame and label using PySide")
 
     """
@@ -197,7 +197,7 @@ if __name__ == "__main__":
         self.canvas.draw()
 
       def actionClear(self):
-        print("By setting a breakpoint here, the image can be manipulated interactively")
+        print("By setting a breakpoint here, the image can be manipulated interactively in the debugger")
 
       def actionMouse(self, event):
         x= event.xdata
@@ -212,10 +212,10 @@ if __name__ == "__main__":
 
       # This draws a graph on top of the bitmap.
       # Since the axes are what is being drawn, not really the data,
-      # Redrawing the bitmap does not overwrite the graph, which is drawn
-      # in after the bitmap and so is on top.
+      # Redrawing the bitmap does not cover up the graph, which is drawn
+      # in after the bitmap, and so the graph is on top.
       def actionPlot(self):
-        print("Plot!")
+        print("Plot")
         x= linspace(0,2*pi,100)*20
         y= sin(x/20)*30+40
         self.axes.plot(x, y)
@@ -327,15 +327,12 @@ if __name__ == "__main__":
   # The test starts here
   print("ImgMplCanvas class test")
 
-  # Non-OO code, use a global error message:
-  errmessage= ''
-
   # The file is in a subdirectory of the run directory.
   fn= 't/yellow.png'
 
   name = getImageName(fn)
   if name == None:
-    print(errmessage)
+    print("File " + str(fn) + " not okay. Bailing out.")
     sys.exit()
 
   useTk= False
@@ -343,11 +340,11 @@ if __name__ == "__main__":
   useNoFrame= False
 
   if useTk:
-    displayImageTk(fn, imageName=name)
+    displayImagePyplot(fn, imageName=name)
   elif useFrame:
-    displayImagePysideFrame(fn, imageName=name)
+    displayImagePySideFrame(fn, imageName=name)
   elif useNoFrame:
-    displayImagePyside(fn, imageName=name)
+    displayImagePySide(fn, imageName=name)
   else:
-    displayImagePysideFrameButtons(fn, imageName=name)
+    displayImagePySideFrameButtons(fn, imageName=name)
 
