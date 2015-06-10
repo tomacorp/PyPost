@@ -119,8 +119,8 @@ if __name__ == "__main__":
     fig = Figure(figsize=(width, height), dpi=72)
 
     axes = fig.add_subplot(111)
-    axes.set_xlim(0, width)
-    axes.set_ylim(0, height)
+    axes.set_xlim(0, width - 1)
+    axes.set_ylim(0, height - 1)
     axes.imshow(img)
 
     main = QtGui.QMainWindow()
@@ -183,6 +183,7 @@ if __name__ == "__main__":
     class buttonActions:
       def __init__(self):
         self.status= 1
+        self.deltaMode= False
 
       def actionRemoveImg(self):
         print("Removing Image")
@@ -206,7 +207,15 @@ if __name__ == "__main__":
           return
         xint= int(x + 0.5)
         yint= int(y + 0.5)
-        main.statusBar().showMessage(str(xint) + ', ' + str(yint))
+        if self.deltaMode:
+          dx= xint - self.zx
+          dy= yint - self.zy
+          dred= np.int32(self.img[yint][xint][0]) - self.zred
+          dgreen= np.int32(self.img[yint][xint][1]) - self.zgreen
+          dblue= np.int32(self.img[yint][xint][2]) - self.zblue
+          main.statusBar().showMessage("Abs XY " + str(xint) + ', ' + str(yint) + ', ' + "Delta XY " + str(dx) + ', ' + str(dy) + ': [' + str(dred) + ',' + str(dgreen) + ',' + str(dblue) + ']')
+        else:
+          main.statusBar().showMessage(str(xint) + ', ' + str(yint) + ': ' + str(self.img[yint][xint]))
 
       def actionPickCoords(self, event):
         x= event.xdata
@@ -217,7 +226,26 @@ if __name__ == "__main__":
         yint= int(y + 0.5)
         main.statusBar().showMessage(str(xint) + ', ' + str(yint))
         if event.button == 1:
-          print("XY " + str(xint) + ', ' + str(yint))
+          if not self.deltaMode:
+            print("XY " + str(xint) + ', ' + str(yint) + ': ' + str(self.img[yint][xint]))
+          else:
+            dx= xint - self.zx
+            dy= yint - self.zy
+            dred= np.int32(self.img[yint][xint][0]) - self.zred
+            dgreen= np.int32(self.img[yint][xint][1]) - self.zgreen
+            dblue= np.int32(self.img[yint][xint][2]) - self.zblue
+            print("Delta XY " + str(dx) + ', ' + str(dy) + ': [' + str(dred) + ',' + str(dgreen) + ',' + str(dblue) + ']')
+        elif event.button == 3:
+          if not self.deltaMode:
+            print("Zero delta XY is at:" + str(xint) + ', ' + str(yint) + ': ' + str(self.img[yint][xint]))
+            self.zx= xint
+            self.zy= yint
+            self.zred= np.int32(self.img[yint][xint][0])
+            self.zgreen= np.int32(self.img[yint][xint][1])
+            self.zblue= np.int32(self.img[yint][xint][2])
+            self.deltaMode= True
+          else:
+            self.deltaMode= False
 
 
       # This draws a graph on top of the bitmap.
@@ -260,8 +288,8 @@ if __name__ == "__main__":
     fig = Figure(figsize=(width, height), dpi=72)
 
     axes = fig.add_subplot(111)
-    axes.set_xlim(0, width)
-    axes.set_ylim(0, height)
+    axes.set_xlim(0, width - 1)
+    axes.set_ylim(0, height - 1)
     axes.set_title("Layout", fontsize=12)
     axes.imshow(img)
 
