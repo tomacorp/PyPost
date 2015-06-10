@@ -207,8 +207,18 @@ if __name__ == "__main__":
         xint= int(x + 0.5)
         yint= int(y + 0.5)
         main.statusBar().showMessage(str(xint) + ', ' + str(yint))
+
+      def actionPickCoords(self, event):
+        x= event.xdata
+        y= event.ydata
+        if (x is None or y is None):
+          return
+        xint= int(x + 0.5)
+        yint= int(y + 0.5)
+        main.statusBar().showMessage(str(xint) + ', ' + str(yint))
         if event.button == 1:
           print("XY " + str(xint) + ', ' + str(yint))
+
 
       # This draws a graph on top of the bitmap.
       # Since the axes are what is being drawn, not really the data,
@@ -224,22 +234,22 @@ if __name__ == "__main__":
         self.canvas.show()
 
       # These delegates connect the callbacks to the program data
-      def setImg(self, img):
+      def set_img(self, img):
         self.img= img
 
-      def setCanvas(self, canv):
+      def set_canvas(self, canv):
         self.canvas= canv
 
-      def setAxes(self, ax):
+      def set_axes(self, ax):
         self.axes= ax
 
-      def setFn(self, fn):
+      def set_fn(self, fn):
         self.fn= fn
 
-      def setFig(self, fig):
+      def set_fig(self, fig):
         self.fig= fig
 
-      def setMain(self, main):
+      def set_main(self, main):
         self.main= main
 
     img= skimage.data.imread(fn)
@@ -286,12 +296,12 @@ if __name__ == "__main__":
     button3= QtGui.QPushButton("Clear")
     button4= QtGui.QPushButton("Plot")
     bActions= buttonActions()
-    bActions.setImg(img)
-    bActions.setCanvas(canvas)
-    bActions.setAxes(axes)
-    bActions.setFn(fn)
-    bActions.setFig(fig)
-    bActions.setMain(main)
+    bActions.set_img(img)
+    bActions.set_canvas(canvas)
+    bActions.set_axes(axes)
+    bActions.set_fn(fn)
+    bActions.set_fig(fig)
+    bActions.set_main(main)
     button1.clicked.connect(bActions.actionRemoveImg)
     button2.clicked.connect(bActions.actionMarker)
     button3.clicked.connect(bActions.actionClear)
@@ -306,6 +316,7 @@ if __name__ == "__main__":
     # End of Buttons
 
     canvas.mpl_connect('motion_notify_event', bActions.actionMouse)
+    canvas.mpl_connect('button_release_event', bActions.actionPickCoords)
 
     layout = QtGui.QVBoxLayout()
     layout.addWidget(canvas)
