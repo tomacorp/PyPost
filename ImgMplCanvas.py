@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from future_builtins import *
 
 import sys
+import os.path
 from numpy import *
 from collections import deque
 
@@ -24,18 +25,119 @@ from skimage import data, io
 import imghdr
 import ntpath
 
+class buttonActions:
+  def __init__(self):
+    self.status= 1
+    self.deltaMode= False
+    self.statusBarParent= None
+
+  def actionRemoveImg(self):
+    print("Removing Image")
+    self.img= np.zeros(shape(self.img))
+    self.axes.imshow(self.img)
+    self.canvas.draw()
+
+  def actionMarker(self):
+    print("Add image")
+    self.img = skimage.data.imread(self.fn)
+    self.axes.imshow(self.img)
+    self.canvas.draw()
+
+  def actionClear(self):
+    print("By setting a breakpoint here, the image can be manipulated interactively in the debugger")
+
+  def actionMouse(self, event):
+    x= event.xdata
+    y= event.ydata
+    if (x is None or y is None):
+      return
+    xint= int(x + 0.5)
+    yint= int(y + 0.5)
+    if self.deltaMode:
+      dx= xint - self.zx
+      dy= yint - self.zy
+      dred= np.int32(self.img[yint][xint][0]) - self.zred
+      dgreen= np.int32(self.img[yint][xint][1]) - self.zgreen
+      dblue= np.int32(self.img[yint][xint][2]) - self.zblue
+      if self.statusBarParent:
+        self.statusBarParent.statusBar().showMessage("Abs XY " + str(xint) + ', ' + str(yint) + ', ' + "Delta XY " + str(dx) + ', ' + str(dy) + ': [' + str(dred) + ',' + str(dgreen) + ',' + str(dblue) + ']')
+    else:
+      if self.statusBarParent:
+        self.statusBarParent.statusBar().showMessage(str(xint) + ', ' + str(yint) + ': ' + str(self.img[yint][xint]))
+
+  def actionPickCoords(self, event):
+    x= event.xdata
+    y= event.ydata
+    if (x is None or y is None):
+      return
+    xint= int(x + 0.5)
+    yint= int(y + 0.5)
+    if self.statusBarParent:
+      self.statusBarParent.statusBar().showMessage(str(xint) + ', ' + str(yint) + ': ' + str(self.img[yint][xint]))
+    if event.button == 1:
+      if not self.deltaMode:
+        print("XY " + str(xint) + ', ' + str(yint) + ': ' + str(self.img[yint][xint]))
+      else:
+        dx= xint - self.zx
+        dy= yint - self.zy
+        dred= np.int32(self.img[yint][xint][0]) - self.zred
+        dgreen= np.int32(self.img[yint][xint][1]) - self.zgreen
+        dblue= np.int32(self.img[yint][xint][2]) - self.zblue
+        print("Delta XY " + str(dx) + ', ' + str(dy) + ': [' + str(dred) + ',' + str(dgreen) + ',' + str(dblue) + ']')
+    elif event.button == 3:
+      if not self.deltaMode:
+        print("Zero delta XY is at:" + str(xint) + ', ' + str(yint) + ': ' + str(self.img[yint][xint]))
+        self.zx= xint
+        self.zy= yint
+        self.zred= np.int32(self.img[yint][xint][0])
+        self.zgreen= np.int32(self.img[yint][xint][1])
+        self.zblue= np.int32(self.img[yint][xint][2])
+        self.deltaMode= True
+      else:
+        self.deltaMode= False
+
+  # This draws a graph on top of the bitmap.
+  # Since the axes are what is being drawn, not really the data,
+  # Redrawing the bitmap does not cover up the graph, which is drawn
+  # in after the bitmap, and so the graph is on top.
+  def actionPlot(self):
+    print("Plot")
+    x= linspace(0,2*pi,100)*20
+    y= sin(x/20)*30+40
+    self.axes.plot(x, y)
+    # self.axes.set_title("Graph", fontsize=12)
+    self.canvas.draw()
+    self.canvas.show()
+
+  # These delegates connect the callbacks to the program data
+  def set_img(self, img):
+    self.img= img
+
+  def set_canvas(self, canv):
+    self.canvas= canv
+
+  def set_axes(self, ax):
+    self.axes= ax
+
+  def set_fn(self, fn):
+    self.fn= fn
+
+  def set_fig(self, fig):
+    self.fig= fig
+
+  def set_statusBarParent(self, main):
+    self.statusBarParent= main
+
+
 class ImgMplCanvas(FigureCanvas):
-  def __init__(self, parent=None, width=5, height=4, dpi=72):
-    pass
+  def __init__(self, parent=None, imageName='Image', width=5, height=4, dpi=72):
+    self.parent= parent
+    self.frame= QtGui.QFrame()
+    self.frame.setFrameShape(QtGui.QFrame.StyledPanel)
+    self.frame.setParent(self.parent)
+    self.statusBar= None
 
-
-if __name__ == "__main__":
-
-  import os.path
-  from matplotlib import pyplot as plt
-  import numpy as np
-
-  def getImageName(fn):
+  def getImageName(self, fn):
 
     """I like a lot of error checking on files.
        getImageName gets the string 'yellow' 'for t/yellow.png'.
@@ -56,56 +158,6 @@ if __name__ == "__main__":
       return None
     return imageName
 
-  # gist
-  def displayImagePyplot(fn, imageName='image'):
-    """
-    This is the easy pyplot way to display an image.
-    It also has some nice features, like panning and zooming.
-    It is not as extensible as PySide,
-    but it makes a nice reference for debugging.
-    """
-    print("Display image: " + str(fn) + " using pyplot")
-    img= skimage.data.imread(fn)
-    plt.imshow(img)
-    plt.show()
-
-  # gist
-  def displayImagePySide(fn, imageName='image'):
-    """
-    This is the simplest way to use PySide to display an image in a Figure subplot.
-    There is no layout code, other than hand-coding the FigureCanvas size and
-    QMainWindow size based on the size of the image.
-    """
-    print("Display image: " + str(fn) + " using PySide")
-    img= skimage.data.imread(fn)
-
-    app = QApplication(sys.argv)
-
-    height, width, depth= shape(img)
-    fig = Figure(figsize=(width, height), dpi=72)
-
-    axes = fig.add_subplot(111)
-    # The next two lines are equivalent to the default axes settings
-    #   axes.set_xlim(0, width)
-    #   axes.set_ylim(0, height)
-    axes.imshow(img)
-
-    main = QtGui.QMainWindow()
-    # Without setGeometry the window will have a default position and size
-    main.setGeometry(0, 100, 200+int(width*1.4), 200+int(height*1.4))
-    main.setWindowTitle(imageName)
-
-    canvas = FigureCanvas(fig)
-    canvas.setParent(main)
-    # setMinimumSize prevents the window from becoming tiny and crushing the axes
-    canvas.setMinimumSize(100+int(width*1.4), 100+int(height*1.4))
-
-    main.setCentralWidget(canvas)
-    main.show()
-
-    sys.exit(app.exec_())
-
-  # gist
   def displayImagePySideFrame(fn, imageName='image'):
     """
     This adds a QFrame and QLabel to the PySide interface, and a simple layout.
@@ -127,9 +179,9 @@ if __name__ == "__main__":
     main.setGeometry(0, 100, 200+int(width*1.4), 200+int(height*1.4))
     main.setWindowTitle(imageName)
 
-    frame= QtGui.QFrame()
-    frame.setFrameShape(QtGui.QFrame.StyledPanel)
-    frame.setParent(main)
+    self.frame= QtGui.QFrame()
+    self.frame.setFrameShape(QtGui.QFrame.StyledPanel)
+    self.frame.setParent(main)
 
     canvas = FigureCanvas(fig)
     canvas.setParent(frame)
@@ -147,143 +199,17 @@ if __name__ == "__main__":
 
     layout.setStretchFactor(canvas, 1.0)
 
-    frame.setLayout(layout)
-    frame.show()
+    self.frame.setLayout(layout)
+    self.frame.show()
 
     main.setCentralWidget(frame)
     main.show()
 
     sys.exit(app.exec_())
 
-
-    """
-      This adds a QFrame and QLabel to the PySide interface, and a simple layout.
-
-      It also adds buttons to manipulate the image.
-
-      Once there are buttons, simple things like exiting or printing can be done as long
-      as they don't need much interaction program variables.
-      If there are actions that work on variables, objects and classes are needed.
-
-      This is the explosion of complexity that accompanies the manipulation of
-      program state.
-
-      Will an inner class will work to keep the example tidy?
-      Yes, if lots of delegates counts as tidy.
-    """
-
-
-  def displayImagePySideFrameButtons(fn, imageName='image'):
+  def displayImagePySideFrameButtons(self, fn, imageName='image'):
     print("Display image: " + str(fn) + " with frame and label using PySide")
-
-    """
-      These definitions can be local inside the function like this or outside.
-      Both work.
-    """
-    class buttonActions:
-      def __init__(self):
-        self.status= 1
-        self.deltaMode= False
-
-      def actionRemoveImg(self):
-        print("Removing Image")
-        self.img= np.zeros(shape(self.img))
-        self.axes.imshow(self.img)
-        self.canvas.draw()
-
-      def actionMarker(self):
-        print("Add image")
-        self.img = skimage.data.imread(self.fn)
-        self.axes.imshow(self.img)
-        self.canvas.draw()
-
-      def actionClear(self):
-        print("By setting a breakpoint here, the image can be manipulated interactively in the debugger")
-
-      def actionMouse(self, event):
-        x= event.xdata
-        y= event.ydata
-        if (x is None or y is None):
-          return
-        xint= int(x + 0.5)
-        yint= int(y + 0.5)
-        if self.deltaMode:
-          dx= xint - self.zx
-          dy= yint - self.zy
-          dred= np.int32(self.img[yint][xint][0]) - self.zred
-          dgreen= np.int32(self.img[yint][xint][1]) - self.zgreen
-          dblue= np.int32(self.img[yint][xint][2]) - self.zblue
-          main.statusBar().showMessage("Abs XY " + str(xint) + ', ' + str(yint) + ', ' + "Delta XY " + str(dx) + ', ' + str(dy) + ': [' + str(dred) + ',' + str(dgreen) + ',' + str(dblue) + ']')
-        else:
-          main.statusBar().showMessage(str(xint) + ', ' + str(yint) + ': ' + str(self.img[yint][xint]))
-
-      def actionPickCoords(self, event):
-        x= event.xdata
-        y= event.ydata
-        if (x is None or y is None):
-          return
-        xint= int(x + 0.5)
-        yint= int(y + 0.5)
-        main.statusBar().showMessage(str(xint) + ', ' + str(yint))
-        if event.button == 1:
-          if not self.deltaMode:
-            print("XY " + str(xint) + ', ' + str(yint) + ': ' + str(self.img[yint][xint]))
-          else:
-            dx= xint - self.zx
-            dy= yint - self.zy
-            dred= np.int32(self.img[yint][xint][0]) - self.zred
-            dgreen= np.int32(self.img[yint][xint][1]) - self.zgreen
-            dblue= np.int32(self.img[yint][xint][2]) - self.zblue
-            print("Delta XY " + str(dx) + ', ' + str(dy) + ': [' + str(dred) + ',' + str(dgreen) + ',' + str(dblue) + ']')
-        elif event.button == 3:
-          if not self.deltaMode:
-            print("Zero delta XY is at:" + str(xint) + ', ' + str(yint) + ': ' + str(self.img[yint][xint]))
-            self.zx= xint
-            self.zy= yint
-            self.zred= np.int32(self.img[yint][xint][0])
-            self.zgreen= np.int32(self.img[yint][xint][1])
-            self.zblue= np.int32(self.img[yint][xint][2])
-            self.deltaMode= True
-          else:
-            self.deltaMode= False
-
-
-      # This draws a graph on top of the bitmap.
-      # Since the axes are what is being drawn, not really the data,
-      # Redrawing the bitmap does not cover up the graph, which is drawn
-      # in after the bitmap, and so the graph is on top.
-      def actionPlot(self):
-        print("Plot")
-        x= linspace(0,2*pi,100)*20
-        y= sin(x/20)*30+40
-        self.axes.plot(x, y)
-        # self.axes.set_title("Graph", fontsize=12)
-        self.canvas.draw()
-        self.canvas.show()
-
-      # These delegates connect the callbacks to the program data
-      def set_img(self, img):
-        self.img= img
-
-      def set_canvas(self, canv):
-        self.canvas= canv
-
-      def set_axes(self, ax):
-        self.axes= ax
-
-      def set_fn(self, fn):
-        self.fn= fn
-
-      def set_fig(self, fig):
-        self.fig= fig
-
-      def set_main(self, main):
-        self.main= main
-
     img= skimage.data.imread(fn)
-
-    app = QApplication(sys.argv)
-
     height, width, depth= shape(img)
     fig = Figure(figsize=(width, height), dpi=72)
 
@@ -293,29 +219,20 @@ if __name__ == "__main__":
     axes.set_title("Layout", fontsize=12)
     axes.imshow(img)
 
-    main = QtGui.QMainWindow()
-    main.setGeometry(0, 100, 200+int(width*1.4), 200+int(height*1.4))
-    main.setWindowTitle(imageName)
-    main.statusBar().showMessage('Loading...')
-
-    frame= QtGui.QFrame()
-    frame.setFrameShape(QtGui.QFrame.StyledPanel)
-    frame.setParent(main)
-
     """
-    This adds a QFrame and QLabel to the PySide interface, and a simple layout.
-    It also adds buttons to manipulate the image.
+      This adds a QFrame and QLabel to the PySide interface, and a simple layout.
+      It also adds buttons to manipulate the image.
     """
 
     canvas = FigureCanvas(fig)
-    canvas.setParent(frame)
+    canvas.setParent(self.frame)
     canvas.setMinimumSize(100+int(width*1.4), 100+int(height*1.4))
 
     label= QtGui.QLabel()
     # when calling QtGui.QLabel.setText() with a string, must use unicode eg u"myname"
     label.setText(imageName)
     label.setAlignment(Qt.AlignHCenter)
-    label.setParent(frame)
+    label.setParent(self.frame)
 
     # Buttons
     groupBox = QtGui.QGroupBox("Canvas Control Buttons")
@@ -323,17 +240,20 @@ if __name__ == "__main__":
     button2= QtGui.QPushButton("Restore")
     button3= QtGui.QPushButton("Clear")
     button4= QtGui.QPushButton("Plot")
-    bActions= buttonActions()
-    bActions.set_img(img)
-    bActions.set_canvas(canvas)
-    bActions.set_axes(axes)
-    bActions.set_fn(fn)
-    bActions.set_fig(fig)
-    bActions.set_main(main)
-    button1.clicked.connect(bActions.actionRemoveImg)
-    button2.clicked.connect(bActions.actionMarker)
-    button3.clicked.connect(bActions.actionClear)
-    button4.clicked.connect(bActions.actionPlot)
+    # Button actions need to be in self to keep a reference to them.
+    # The reference in mpl_connect must be weak, I guess.
+    self.bActions= buttonActions()
+    self.bActions.set_img(img)
+    self.bActions.set_canvas(canvas)
+    self.bActions.set_axes(axes)
+    self.bActions.set_fn(fn)
+    self.bActions.set_fig(fig)
+    if self.statusBar:
+      self.bActions.set_statusBarParent(self.statusBar)
+    button1.clicked.connect(self.bActions.actionRemoveImg)
+    button2.clicked.connect(self.bActions.actionMarker)
+    button3.clicked.connect(self.bActions.actionClear)
+    button4.clicked.connect(self.bActions.actionPlot)
     vbox = QHBoxLayout()
     vbox.addWidget(button1)
     vbox.addWidget(button2)
@@ -343,8 +263,8 @@ if __name__ == "__main__":
     groupBox.setLayout(vbox)
     # End of Buttons
 
-    canvas.mpl_connect('motion_notify_event', bActions.actionMouse)
-    canvas.mpl_connect('button_release_event', bActions.actionPickCoords)
+    canvas.mpl_connect('motion_notify_event', self.bActions.actionMouse)
+    canvas.mpl_connect('button_release_event', self.bActions.actionPickCoords)
 
     layout = QtGui.QVBoxLayout()
     layout.addWidget(canvas)
@@ -353,37 +273,42 @@ if __name__ == "__main__":
 
     layout.setStretchFactor(canvas, 1.0)
 
-    frame.setLayout(layout)
-    frame.show()
+    self.frame.setLayout(layout)
+    self.frame.show()
 
-    main.setCentralWidget(frame)
-    main.statusBar().showMessage('Ready')
-    main.show()
+  def setStatusBar(self, main):
+    self.statusBar= main
 
-    sys.exit(app.exec_())
-
-
-  # The test starts here
+# The test starts here
+if __name__ == "__main__":
+  from matplotlib import pyplot as plt
+  import numpy as np
   print("ImgMplCanvas class test")
+
+  app = QApplication(sys.argv)
+
+  main = QtGui.QMainWindow()
 
   # The file is in a subdirectory of the run directory.
   fn= 't/yellow.png'
-
-  name = getImageName(fn)
+  imgCanvas= ImgMplCanvas(parent=main)
+  name = imgCanvas.getImageName(fn)
   if name == None:
     print("File " + str(fn) + " not okay. Bailing out.")
     sys.exit()
 
-  useTk= False
-  useFrame= False
-  useNoFrame= False
+  width= 400
+  height=300
 
-  if useTk:
-    displayImagePyplot(fn, imageName=name)
-  elif useFrame:
-    displayImagePySideFrame(fn, imageName=name)
-  elif useNoFrame:
-    displayImagePySide(fn, imageName=name)
-  else:
-    displayImagePySideFrameButtons(fn, imageName=name)
+  main.setGeometry(0, 100, 200+int(width*1.4), 200+int(height*1.4))
+  main.setWindowTitle(name)
+  main.statusBar().showMessage('Loading...')
 
+  imgCanvas.setStatusBar(main)
+  imgCanvas.displayImagePySideFrameButtons(fn, imageName=name)
+
+  main.setCentralWidget(imgCanvas.frame)
+  main.statusBar().showMessage('Ready')
+  main.show()
+
+  sys.exit(app.exec_())
