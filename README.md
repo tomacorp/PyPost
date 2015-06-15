@@ -166,6 +166,21 @@ In the middle area outside of the graph, the scroll-wheel provides zooming.
 Clicking on a waveform in the graph sets a marker at the X position of the mouse pointer,
 and it reports the value of the waveform at the Y position corresponding to this X position.
 
+## Bugs
+
+PyPost does not yet handle 
+  - Complex numbers for frequency-domain analysis
+  - Multiple datasets in one file
+  - There should be a function in ReadSpiceRaw to find the sweep variable,
+
+In development, not working yet
+  - Does not yet handle switching back and forth between graphs and images.
+  - Does not yet handle drawing on top of images.
+  
+## To Do
+
+Multilayer images with display controls
+
 ## Install instructions
 
 ### Set up git

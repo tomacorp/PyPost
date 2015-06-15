@@ -225,7 +225,7 @@ class CommandInterp:
     elif cmd == 'img':
       canvasType= str(type(self.sc))
       if (canvasType != "<class 'ImgMplCanvas.ImgMplCanvas'>"):
-        message= "Error: can't draw image except on an image canvas"
+        message= "Error: can't draw image except on an image canvas.\nTo create an image canvas see set imgdev."
         print(message)
       elif os.path.isfile(arg):
         print("Display image: " + str(arg))
@@ -330,6 +330,7 @@ class CommandInterp:
   def readRawFile(self):
     # TODO: There should be a function in ReadSpiceRaw to find the proper value for the x variable,
     #       instead of assuming that it is named 't'
+    #       After reading the raw file, emit a message such as 'sweep variable is t'.
     rawReader= ReadSpiceRaw.spice_read(self.rawFileName)
     if rawReader is not None:
       rawReader.loadSpiceVoltages()
