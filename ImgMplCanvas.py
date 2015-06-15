@@ -5,6 +5,7 @@ from future_builtins import *
 
 import sys
 import os.path
+import numpy as np
 from numpy import *
 from collections import deque
 
@@ -135,7 +136,7 @@ class ImgMplCanvas(FigureCanvas):
     self.frame= QtGui.QFrame()
     self.frame.setFrameShape(QtGui.QFrame.StyledPanel)
     self.frame.setParent(self.parent)
-    self.statusBar= None
+    self.statusBar= None  
 
   def getImageName(self, fn):
 
@@ -196,7 +197,6 @@ class ImgMplCanvas(FigureCanvas):
     layout = QtGui.QVBoxLayout()
     layout.addWidget(canvas)
     layout.addWidget(label)
-
     layout.setStretchFactor(canvas, 1.0)
 
     self.frame.setLayout(layout)
@@ -279,14 +279,19 @@ class ImgMplCanvas(FigureCanvas):
   def setStatusBar(self, main):
     self.statusBar= main
 
+  def get_name(self):
+    return self.name
+  
+  def get_xvar(self):
+    return None
+
 # The test starts here
 if __name__ == "__main__":
   from matplotlib import pyplot as plt
   import numpy as np
+  
   print("ImgMplCanvas class test")
-
   app = QApplication(sys.argv)
-
   main = QtGui.QMainWindow()
 
   # The file is in a subdirectory of the run directory.

@@ -30,23 +30,6 @@ import ImgMplCanvas
 # Running in the virtual environment at 
 # /Users/toma/anaconda/envs/pypostenv/bin/
 
-# conda env list
-# source activate pypostenv
-
-# conda install pyside
-# conda remove pyqt
-# conda install matplotlib
-# pip install fysom
-
-# On new machines, configure git:
-# git config --global user.name "Tom Anderson"
-# git config --global user.email tomacorp@gmail.com
-
-# For git commit:
-# git push origin master
-
-# Project->Project Properties
-
 # Previous things I've used:
 # Custom python: /Users/toma/Library/Enthought/Canopy_64bit/User/bin/python
 # Or: /Users/toma/python278i/bin/python

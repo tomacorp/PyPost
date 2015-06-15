@@ -11,7 +11,6 @@ from skimage import data
 import imghdr
 import ntpath
 
-
 import re
 import numpy as np
 import h5py
@@ -19,6 +18,7 @@ import h5py
 import EngEvaluate
 import ReadSpiceRaw
 import SpiceVarExpr
+import ImgMplCanvas
 
 # di     show available vars from raw file
 # show   list user-assigned variables
@@ -223,7 +223,11 @@ class CommandInterp:
         print(message)
         self.pyCode= "# " + message
     elif cmd == 'img':
-      if os.path.isfile(arg):
+      canvasType= str(type(self.sc))
+      if (canvasType != "<class 'ImgMplCanvas.ImgMplCanvas'>"):
+        message= "Error: can't draw image except on an image canvas"
+        print(message)
+      elif os.path.isfile(arg):
         print("Display image: " + str(arg))
         fileType= imghdr.what(arg)
         fileExtension= '.' + fileType
@@ -235,6 +239,9 @@ class CommandInterp:
         print("Image is in variable: " + str(varName))
         self._globals[varName]= skimage.data.imread(arg)
         # self.setPostParameter("graphdev " + str(varName))
+        
+        self.sc.displayImagePySideFrameButtons(arg, imageName=varName)        
+        
         # self.sc.plt.imshow(self._globals[varName])
         # self.sc.show()
       else:
@@ -434,7 +441,7 @@ class CommandInterp:
       return message
 
   def setPostParameter(self, arg):
-    regexSet= re.match(r'^(xname|title|xl|yl|graphdev) (.*)', arg)
+    regexSet= re.match(r'^(xname|title|xl|yl|graphdev|imgdev) (.*)', arg)
     if regexSet is not None:
       setcmd= regexSet.group(1)
       setarg= regexSet.group(2)
@@ -494,6 +501,7 @@ class CommandInterp:
               self.sc.plt.set_xlim(lo, hi)
               self.pyCode = 'graph.set_xlim(' + str(lo) + ',' + str(hi) + ')'
               self.sc.draw()
+              
       elif setcmd == 'graphdev':
         currentCanvasName= self.sc.get_name()
         if setarg != currentCanvasName:
@@ -504,6 +512,17 @@ class CommandInterp:
             print "Need to set active graph to " + str(setarg)
           self.graphs.setActive(setarg)
           self.setGraphicsActiveDelegate(self.graphs.getActiveCanvas())
+          
+      elif setcmd == 'imgdev':
+        currentCanvasName= self.sc.get_name()
+        if setarg != currentCanvasName:
+          if setarg not in self.graphs.cd:
+            print "Need a new graph called " + str(setarg)
+            self.graphs.createImg(canvasName=str(setarg))
+          else:
+            print "Need to set active graph to " + str(setarg)
+          self.graphs.setActive(setarg)
+          self.setGraphicsActiveDelegate(self.graphs.getActiveCanvas())      
 
       else:
         message = "Unrecognized set command: " + setcmd

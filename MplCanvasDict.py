@@ -20,6 +20,7 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.ticker import EngFormatter
 import EngMplCanvas
+import ImgMplCanvas
 
 # TODO: Refactor to take more canvas types.
 
@@ -57,7 +58,17 @@ class MplCanvasDict():
     c.name= canvasName
     self.cd[canvasName]= c
     return canvasName
-
+  
+  def createImg(self, canvasName='', parent=None, width=5, height=4, dpi=72):
+    if canvasName == '':
+      canvasCount= len(self.cd) + 1
+      canvasName= "PyPost_" + str(canvasCount)    
+    c= ImgMplCanvas.ImgMplCanvas(parent=parent, width=width, height=height, dpi=dpi)
+    # c.setWindowTitle(canvasName)
+    c.name= canvasName
+    self.cd[canvasName]= c
+    return canvasName
+  
   def delete(self, canvasName):
     if self.active == canvasName:
       self.active= ''
