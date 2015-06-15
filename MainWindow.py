@@ -38,7 +38,9 @@ import ImgMplCanvas
 # conda install matplotlib
 # pip install fysom
 
-
+# On new machines:
+# git config --global user.name "Tom Anderson"
+# git config --global user.email tomacorp@gmail.com
 
 # Project->Project Properties
 
