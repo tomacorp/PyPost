@@ -165,3 +165,35 @@ In the middle area outside of the graph, the scroll-wheel provides zooming.
 
 Clicking on a waveform in the graph sets a marker at the X position of the mouse pointer,
 and it reports the value of the waveform at the Y position corresponding to this X position.
+
+## Install instructions
+
+### Set up git
+On new machines, don't forget to configure git:
+
+```
+# git config --global user.name "Tom Anderson"
+# git config --global user.email tomacorp@gmail.com
+```
+
+Install conda from http://continuum.io/downloads
+
+After setting up a virtual environment using conda,
+the project can be downloaded and the dependencies installed with
+
+```
+virtualenv pypostenv
+cd ~/Developer/Python
+git clone https://github.com/tomacorp/PyPost.git
+cd PyPost
+
+# List the available virtual environments
+conda env list
+
+source activate pypostenv
+
+conda install pyside
+conda remove pyqt
+conda install matplotlib
+pip install fysom
+```
