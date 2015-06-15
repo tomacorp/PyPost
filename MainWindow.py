@@ -27,11 +27,22 @@ import EngMplCanvas
 import MplCanvasDict
 import ImgMplCanvas
 
+# Running in the virtual environment at 
+# /Users/toma/anaconda/envs/pypostenv/bin/
+
+# conda env list
+# source activate pypostenv
+
 # conda install pyside
-# pip install fysom
 # conda remove pyqt
+# conda install matplotlib
+# pip install fysom
+
+
 
 # Project->Project Properties
+
+# Previous things I've used:
 # Custom python: /Users/toma/Library/Enthought/Canopy_64bit/User/bin/python
 # Or: /Users/toma/python278i/bin/python
 # Or: /Users/toma/anaconda/bin/python

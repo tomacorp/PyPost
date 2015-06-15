@@ -30,6 +30,7 @@
 *.jpg
 *.sqlite
 *.wpu
+.DS_Store
 x
 restats
 attic
