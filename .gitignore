@@ -30,6 +30,7 @@
 *.jpg
 *.sqlite
 *.wpu
+Xyce.sta
 .DS_Store
 x
 restats

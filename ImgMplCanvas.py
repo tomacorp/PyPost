@@ -159,55 +159,7 @@ class ImgMplCanvas(FigureCanvas):
       return None
     return imageName
 
-  def displayImagePySideFrame(fn, imageName='image'):
-    """
-    This adds a QFrame and QLabel to the PySide interface, and a simple layout.
-    """
-    print("Display image: " + str(fn) + " with frame and label using PySide")
-    img= skimage.data.imread(fn)
-
-    app = QApplication(sys.argv)
-
-    height, width, depth= shape(img)
-    fig = Figure(figsize=(width, height), dpi=72)
-
-    axes = fig.add_subplot(111)
-    axes.set_xlim(0, width - 1)
-    axes.set_ylim(0, height - 1)
-    axes.imshow(img)
-
-    main = QtGui.QMainWindow()
-    main.setGeometry(0, 100, 200+int(width*1.4), 200+int(height*1.4))
-    main.setWindowTitle(imageName)
-
-    self.frame= QtGui.QFrame()
-    self.frame.setFrameShape(QtGui.QFrame.StyledPanel)
-    self.frame.setParent(main)
-
-    canvas = FigureCanvas(fig)
-    canvas.setParent(frame)
-    canvas.setMinimumSize(100+int(width*1.4), 100+int(height*1.4))
-
-    label= QtGui.QLabel()
-    # when calling QtGui.QLabel.setText() with a string, must use unicode eg u"myname"
-    label.setText(imageName)
-    label.setAlignment(Qt.AlignHCenter)
-    label.setParent(frame)
-
-    layout = QtGui.QVBoxLayout()
-    layout.addWidget(canvas)
-    layout.addWidget(label)
-    layout.setStretchFactor(canvas, 1.0)
-
-    self.frame.setLayout(layout)
-    self.frame.show()
-
-    main.setCentralWidget(frame)
-    main.show()
-
-    sys.exit(app.exec_())
-
-  def displayImagePySideFrameButtons(self, fn, imageName='image'):
+  def displayImageWindow(self, fn, imageName='image'):
     print("Display image: " + str(fn) + " with frame and label using PySide")
     img= skimage.data.imread(fn)
     height, width, depth= shape(img)
@@ -295,7 +247,8 @@ if __name__ == "__main__":
   main = QtGui.QMainWindow()
 
   # The file is in a subdirectory of the run directory.
-  fn= 't/yellow.png'
+  # fn= 't/yellow.png'
+  fn= 't/Layout2.png'
   imgCanvas= ImgMplCanvas(parent=main)
   name = imgCanvas.getImageName(fn)
   if name == None:
@@ -310,7 +263,7 @@ if __name__ == "__main__":
   main.statusBar().showMessage('Loading...')
 
   imgCanvas.setStatusBar(main)
-  imgCanvas.displayImagePySideFrameButtons(fn, imageName=name)
+  imgCanvas.displayImageWindow(fn, imageName=name)
 
   main.setCentralWidget(imgCanvas.frame)
   main.statusBar().showMessage('Ready')

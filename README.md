@@ -147,8 +147,13 @@ Reads the file at `<filename>` and executes it as a list of commands as if they 
 `. <filename>`
 Synonym for include. Saves typing.
 
-`__di__`
+`di`
 Displays the simulation variables that are available to be plotted or used in expressions.
+
+`autoscale`
+Displays the last waveform again and autoscales it. This is useful when the plot range gets
+messed up by errant pointer manipulation. It is also useful when the gs command is results
+in a plot that would have been better served by an autoscaled gr command.
 
 ## Mouse commands
 
@@ -176,6 +181,11 @@ PyPost does not yet handle
 In development, not working yet
   - Does not yet handle switching back and forth between graphs and images.
   - Does not yet handle drawing on top of images.
+  - When there is RGBA in the image, it looks like it will not erase.
+    It looks like erasing is perhaps just overwriting, and the black
+    erased image comes through with no alpha?
+    
+See http://stackoverflow.com/questions/9899409/pyside-removing-a-widget-from-a-layout
   
 ## To Do
 

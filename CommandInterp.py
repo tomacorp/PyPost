@@ -69,6 +69,9 @@ class CommandInterp:
     self.rawFileName= ''
     self.spiceFileName= ''
     self.simulationBaseName= ''
+    
+    self.lastGraphCommand1= ''
+    self.lastGraphCommand2= ''
 
     # Move to graphics delegate
     #self.xvar= 't'
@@ -81,7 +84,7 @@ class CommandInterp:
     print("Command: " + cmdText)
     message= ''
     longCmd= re.match(r'^(ci|gr|gs|set|si|history|readh5|include|\.|img) (.*)', cmdText)
-    shortCmd= re.match(r'^(ci|set|si|di|history)$', cmdText)
+    shortCmd= re.match(r'^(ci|set|si|di|history|autoscale)$', cmdText)
     if longCmd is not None:
       message= self.executeLongCommand(longCmd, cmdText)
     elif shortCmd is not None:
@@ -123,6 +126,14 @@ class CommandInterp:
 
     elif cmd == 'history':
       print "History not implemented yet."
+      
+    elif cmd == 'autoscale':
+      print "Autoscale last curve on this graph"
+      self.sc.setAutoscale()
+      self.sc.plt.hold(False)
+      if (self.lastGraphCommand1 != ""):
+        self.graphExpr(self.lastGraphCommand1, self.lastGraphCommand2)
+      self.pyCode= "graph.setAutoscale()\ngraphExpr('" + str(self.lastGraphCommand2) + "')"
 
     return message
 
@@ -189,6 +200,8 @@ class CommandInterp:
       message= self.graphExpr(arg, cmdText)
       if message == '':
         self.pyCode= "graph.graph("+ self.evaluator.logPyCode + ")"
+        self.lastGraphCommand1= str(arg)
+        self.lastGraphCommand2= str(cmdText)
       else:
         print(message)
         self.pyCode= "# " + message
@@ -197,6 +210,8 @@ class CommandInterp:
       message= self.graphExpr(arg, cmdText)
       if message == '':
         self.pyCode= "graph.graphSameAxes("+ self.evaluator.logPyCode + ")"
+        self.lastGraphCommand1= str(arg)
+        self.lastGraphCommand2= str(cmdText)
       else:
         print(message)
         self.pyCode= "# " + message
@@ -240,7 +255,7 @@ class CommandInterp:
         self._globals[varName]= skimage.data.imread(arg)
         # self.setPostParameter("graphdev " + str(varName))
         
-        self.sc.displayImagePySideFrameButtons(arg, imageName=varName)        
+        self.sc.displayImageWindow(arg, imageName=varName)        
         
         # self.sc.plt.imshow(self._globals[varName])
         # self.sc.show()
@@ -355,6 +370,9 @@ class CommandInterp:
   # TODO: Move this to MainWindow so that the Qt calls aren't used here.
   # TODO: Make the simulator path and command configurable.
   # TODO: Should probably have a delegate for the simulator.
+  
+  # Xyce runtime command:  runxyce -r xtest.raw -a -gui ngtest.cki
+  
   def simulate(self, arg):
     if arg != '':
       self.setCircuitName(arg)
