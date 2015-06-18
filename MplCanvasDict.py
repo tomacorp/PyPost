@@ -69,7 +69,12 @@ class MplCanvasDict():
     self.cd[canvasName]= c
     return canvasName
   
-  def delete(self, canvasName):
+  def remove(self, canvasName):
+    if canvasName == 'PyPost_1':
+      print("Can't delete main graph window PyPost_1")
+      return
     if self.active == canvasName:
-      self.active= ''
-    del self.cd[canvasName]
+      self.active= 'PyPost_1'
+    c= self.cd[canvasName]
+    del(self.cd[canvasName])
+    c.deleteLater()

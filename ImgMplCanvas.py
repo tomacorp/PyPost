@@ -132,6 +132,13 @@ class buttonActions:
 
 class ImgMplCanvas(FigureCanvas):
   def __init__(self, parent=None, imageName='Image', width=5, height=4, dpi=72):
+    
+    # TODO: This needs to be more like EngMplCanvas, where the figure and the canvas
+    # are properties of the object. This is trying to be ISA FigureCanvas,
+    # which is causing problems because it is not a complete enough implementation
+    # and does not support all the operations that it needs to.
+    
+    # FigureCanvas.__init__(self, None)
     self.parent= parent
     self.frame= QtGui.QFrame()
     self.frame.setFrameShape(QtGui.QFrame.StyledPanel)
@@ -140,8 +147,7 @@ class ImgMplCanvas(FigureCanvas):
 
   def getImageName(self, fn):
 
-    """I like a lot of error checking on files.
-       getImageName gets the string 'yellow' 'for t/yellow.png'.
+    """getImageName gets the string 'yellow' 'for t/yellow.png'.
        It also checks to see that the file extension matches the file type
        that Python knows how to infer."""
 

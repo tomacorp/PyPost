@@ -191,6 +191,37 @@ See http://stackoverflow.com/questions/9899409/pyside-removing-a-widget-from-a-l
 
 Multilayer images with display controls
 
+The image canvas should have its own command line for image processing
+commands, layer commands, markers, etc. Extraction commands could make
+2D slices that would be fed to the plotting commands.
+The different commands could be done by either prompt, but the
+shortcuts would be specific to one prompt.
+
+There should also be a 3D canvas that can work on a synthesized stack of
+2D layers. This could also have its own command line.
+
+There could also be a launcher that would know how to fire off these different
+canvases, and would provide the global space for their communication.
+
+A 2D plotting routine can be a projection of 1D data into a 2D vector or raster graphics space.
+A 3D plotting routine can be a projection of 2D data into a 3D vector grpahics space.
+Different projections are possible, for example a meter can be a projection
+of 1D data into a postition, color, or number that changes over time.
+
+The shortcuts for working with a genre of data such as simulation results in 2D plots
+makes a good set of commands for a post processor. The question is how to enhance
+the shortcuts for handling the different data type of 2D and 3D mechanical data
+for thermal analysis. This could be done by making the commands coexists, or having
+interface modes, or having different command lines.
+
+For example an electromagnetics program made this programmable by having a calculator
+with different stacks for the different dimensionalities. For example, dot product
+pops the bottom two entries from the vector stack and pushes the dot product to
+the scalar stack. This seems clever but has daunting complexity.
+
+Matlab and iPython have one prompt and a rich language, but don't have post
+processor style shortcuts.
+
 ## Install instructions
 
 ### Set up git

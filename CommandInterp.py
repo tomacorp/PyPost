@@ -83,7 +83,7 @@ class CommandInterp:
     cmdText=cmdText.lstrip()
     print("Command: " + cmdText)
     message= ''
-    longCmd= re.match(r'^(ci|gr|gs|set|si|history|readh5|include|\.|img) (.*)', cmdText)
+    longCmd= re.match(r'^(ci|gr|gs|set|si|history|readh5|include|\.|img|delete) (.*)', cmdText)
     shortCmd= re.match(r'^(ci|set|si|di|history|autoscale)$', cmdText)
     if longCmd is not None:
       message= self.executeLongCommand(longCmd, cmdText)
@@ -237,6 +237,9 @@ class CommandInterp:
         message= 'Include file "' + arg + '" not found in command: ' + str(cmdText)
         print(message)
         self.pyCode= "# " + message
+    elif cmd == 'delete':
+      print str(arg)
+      self.graphs.remove(arg)
     elif cmd == 'img':
       canvasType= str(type(self.sc))
       if (canvasType != "<class 'ImgMplCanvas.ImgMplCanvas'>"):
