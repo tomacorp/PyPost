@@ -11,16 +11,13 @@
 *.tar.gz
 *.tgz
 *.geo
-*.png
 *.mm
 *.mtx
 *.sublime-project
 *.sublime-workspace
 *.txt
 *.asc
-*.cki
 *.xcf
-*.png
 *.pxm
 *.xsd
 *.pam

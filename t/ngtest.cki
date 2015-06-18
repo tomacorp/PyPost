@@ -1,0 +1,7 @@
+Test file for spice2hdf5
+vin v1 0 pwl 0 0 100u 0 300u 3
+rin v1 v2 10
+lin v2 v3 10m
+cf v3 0 2.2u
+.tran 10u 10m
+.end
