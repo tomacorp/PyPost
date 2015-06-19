@@ -20,10 +20,9 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.ticker import EngFormatter
 
- # TODO:     Python commands need to be logged at some point.
-
-
  #TODO: Use engineering notation for marker annotation
+ #       Remove space between number and engineering letter
+ #       Greek mu is missing
  #TODO: Add more measurements
          #Risetime
          #Overshoot
@@ -37,9 +36,6 @@ from matplotlib.ticker import EngFormatter
          #Windowing functions
          #FFT
  #TODO: Marker that follows mouse pointer
- #TODO: Could probably eliminate the start_scrolling_ variables
- #       at the expense of more function calls.
-
 
 class EngMplCanvas(FigureCanvas):
   """A QWidget that implements Matplotlib"""
@@ -63,12 +59,12 @@ class EngMplCanvas(FigureCanvas):
 
     self.commandDelegate= None
 
-    fig = Figure(figsize=(width, height), dpi=dpi)
-    self.plt = fig.add_subplot(111)
+    self.fig = Figure(figsize=(width, height), dpi=dpi)
+    self.plt = self.fig.add_subplot(111)
 
-    FigureCanvas.__init__(self, fig)
+    FigureCanvas.__init__(self, self.fig)
 
-    fig.tight_layout(pad=1.5, w_pad=0.0, h_pad=0.0)
+    self.fig.tight_layout(pad=1.5, w_pad=0.0, h_pad=0.0)
 
     FigureCanvas.setSizePolicy(self,
                                QSizePolicy.Expanding,
@@ -80,20 +76,12 @@ class EngMplCanvas(FigureCanvas):
     self.mpl_connect('figure_enter_event', self.inGraphingMargin)
     self.mpl_connect('figure_leave_event', self.outGraphingMargin)
 
-    self.fig = self.figure
-    self.retVal= {}
-
     self.pickpoints= None
     self.pickline= None
     self.pick_event_id= None
     self.button_press_event_id= None
     self.scroll_event_id= None
     self.figure_scroll_event_id= None
-
-    self.start_scrolling_xlimlow= self.xlimlow
-    self.start_scrolling_xlimhigh= self.xlimhigh
-    self.start_scrolling_ylimlow= self.ylimlow
-    self.start_scrolling_ylimhigh= self.ylimhigh
 
     self.formatter = EngFormatter(unit='', places=1)
 
@@ -132,11 +120,6 @@ class EngMplCanvas(FigureCanvas):
     else:
       self.plt.set_autoscalex_on(False)
       self.xlimlow, self.xlimhigh= self.plt.set_xlim(self.xlimlow, self.xlimhigh)
-    self.start_scrolling_xlimlow= self.xlimlow
-    self.start_scrolling_xlimhigh= self.xlimhigh
-    self.start_scrolling_ylimlow= self.ylimlow
-    self.start_scrolling_ylimhigh= self.ylimhigh
-
 
   def inGraphingArea(self, event):
     self.pick_event_id= self.mpl_connect('pick_event', self.onPick)
@@ -156,18 +139,7 @@ class EngMplCanvas(FigureCanvas):
   def outGraphingMargin(self, event):
     self.xlimlow, self.xlimhigh= self.plt.get_xlim()
     self.ylimlow, self.ylimhigh= self.plt.get_ylim()
-
     self.mpl_disconnect(self.figure_scroll_event_id)
-    if (self.start_scrolling_xlimlow != self.xlimlow or
-        self.start_scrolling_xlimhigh != self.xlimhigh or
-        self.start_scrolling_ylimlow != self.ylimlow or
-        self.start_scrolling_ylimhigh != self.ylimhigh):
-      if (self.start_scrolling_xlimlow != self.xlimlow or
-          self.start_scrolling_xlimhigh != self.xlimhigh):
-        self.start_scrolling_xlimlow, self.start_scrolling_xlimhigh= self.plt.set_xlim(self.xlimlow, self.xlimhigh)
-      if (self.start_scrolling_ylimlow != self.ylimlow or
-          self.start_scrolling_ylimhigh != self.ylimhigh):
-        self.start_scrolling_ylimlow, self.start_scrolling_ylimhigh= self.plt.set_ylim(self.ylimlow, self.ylimhigh)
 
   def onFigureScroll(self, event):
     """
