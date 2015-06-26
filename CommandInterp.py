@@ -350,7 +350,9 @@ class CommandInterp:
     #       instead of assuming that it is named 't'
     #       After reading the raw file, emit a message such as 'sweep variable is t'.
     rawReader= ReadSpiceRaw.spice_read(self.rawFileName)
-    if rawReader is not None:
+    if rawReader is None:
+      print("file " + str(self.rawFileName) + " not found. File not read.")
+    else:
       rawReader.loadSpiceVoltages()
       self._globals['r']= rawReader
       self.sc.set_xvar('t')

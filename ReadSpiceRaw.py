@@ -387,6 +387,9 @@ if __name__ == "__main__":
   # modules to run the available simulators on all the netlists.
 
   reader1= spice_read('ngtest.raw')
+  if reader1 is None:
+    print("file ngtest.raw not found, bailing out")
+    exit
   reader1.loadSpiceVoltages()
   r1v2= reader1.v('v2')
   print str(r1v2)
@@ -398,6 +401,9 @@ if __name__ == "__main__":
   print reader1.getCurrentNames()
 
   reader2= spice_read('t/t1.raw')
+  if reader2 is None:
+    print("file t/t1.raw not found, bailing out")
+    exit  
   reader2.loadSpiceVoltages()
   r2v2= reader2.v('3')
   print str(r2v2)
