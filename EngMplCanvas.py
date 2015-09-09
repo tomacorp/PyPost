@@ -86,6 +86,9 @@ class EngMplCanvas(FigureCanvas):
     self.formatter = EngFormatter(unit='', places=1)
 
   def plotYList(self, res, arg, title):
+    if len(res) == 0:
+      print("No data found for " + str(title))
+      return    
     self.plt.plot(res)
     self.plt.set_xlabel('Index', fontsize=self.fsz,picker=5)
     self.plt.set_ylabel(arg, fontsize=self.fsz)
@@ -97,6 +100,9 @@ class EngMplCanvas(FigureCanvas):
     self.show()
 
   def plotXYList(self, x, y, xlabel, ylabel, title):
+    if len(y) == 0:
+      print("No data found for " + str(ylabel))
+      return    
     self.plt.plot(x, y, picker=5)
     self.plt.set_xlabel(xlabel, fontsize=self.fsz)
     self.plt.set_ylabel(ylabel, fontsize=self.fsz)
