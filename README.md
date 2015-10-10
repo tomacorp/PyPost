@@ -225,17 +225,18 @@ processor style shortcuts.
 ## Install instructions
 
 ### Set up git
-On new machines, don't forget to configure git:
+If you are installing with git, 
+on new machines, don't forget to configure git with
+your name and email:
 
 ```
-# git config --global user.name "Tom Anderson"
-# git config --global user.email tomacorp@gmail.com
+# git config --global user.name "Your Name"
+# git config --global user.email your_name@example.com
 ```
 
 Install conda from http://continuum.io/downloads
 
-After setting up a virtual environment using conda,
-the project can be downloaded and the dependencies installed with
+### Create a virtual environment
 
 ```
 virtualenv pypostenv
@@ -243,13 +244,28 @@ cd ~/Developer/Python
 git clone https://github.com/tomacorp/PyPost.git
 cd PyPost
 
-# List the available virtual environments
-conda env list
+### Install the Python modules
 
-source activate pypostenv
+After setting up a virtual environment using conda,
+the project can be downloaded and the dependencies installed with
 
-conda install pyside
+```bash
 conda remove pyqt
+conda install pyside
 conda install matplotlib
 pip install fysom
 ```
+
+### List the available virtual environments
+```
+conda env list
+```
+
+### Use the virtual environment for this project
+```
+source activate pypostenv
+```
+
+### Running outside of the virtual environment
+
+/Users/toma/anaconda/envs/pypostenv/bin/python /Users/toma/Developer/Python/PyPost/MainWindow.py

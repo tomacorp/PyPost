@@ -52,6 +52,8 @@ class EngMplCanvas(FigureCanvas):
     self.ylabel= 'Y'
     self.title= 'title'
     self.name= ''
+    self.xlog= False
+    self.ylog= False
     # self.xvar stores the name of the Command Interpreter's variable for the x-axis.
     # This is used so that the graphing window contains the graph state
     # needed by the CommandInterp, which might vary from graph to graph.
@@ -86,6 +88,9 @@ class EngMplCanvas(FigureCanvas):
     self.formatter = EngFormatter(unit='', places=1)
 
   def plotYList(self, res, arg, title):
+    if len(res) == 0:
+      print("No data found for " + str(title))
+      return
     self.plt.plot(res)
     self.plt.set_xlabel('Index', fontsize=self.fsz,picker=5)
     self.plt.set_ylabel(arg, fontsize=self.fsz)
@@ -97,7 +102,10 @@ class EngMplCanvas(FigureCanvas):
     self.show()
 
   def plotXYList(self, x, y, xlabel, ylabel, title):
-    self.plt.plot(x, y, picker=5)
+    if len(y) == 0:
+      print("No data found for " + str(ylabel))
+      return
+    self.plotXYLinLog(x, y)
     self.plt.set_xlabel(xlabel, fontsize=self.fsz)
     self.plt.set_ylabel(ylabel, fontsize=self.fsz)
     self.plt.set_title(title, fontsize=self.fsz)
@@ -106,6 +114,25 @@ class EngMplCanvas(FigureCanvas):
     self.setAutoscale()
     self.draw()
     self.show()
+    
+  def plotXYLinLog(self, x, y):
+    if self.xlog and self.ylog:
+      self.plt.loglog(x, y, picker=5)
+    elif self.xlog:
+      self.plt.semilogx(x, y, picker=5)
+    elif self.ylog:
+      self.plt.semilogy(x, y, picker=5)
+    else:
+      self.plt.plot(x, y, picker=5)
+        
+    if self.xlog:
+      self.plt.xaxis.set_scale('log')
+    else:
+      self.plt.xaxis.set_scale('linear')
+    if self.ylog:
+      self.plt.yaxis.set_scale('log')
+    else:
+      self.plt.yaxis.set_scale('linear')     
 
   def setAutoscale(self):
     if self.yauto:
@@ -318,3 +345,9 @@ class EngMplCanvas(FigureCanvas):
 
   def set_xvar(self, s):
     self.xvar= s
+    
+  def set_xlog(self, s):
+    self.xlog= s
+    
+  def set_ylog(self, s):
+    self.ylog= s

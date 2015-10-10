@@ -34,7 +34,7 @@ import ImgMplCanvas
 
 # TODO: Look at how subcircuits are implemented for di and voltage graphing, consider push/pop
 
-# TODO: Check for presence of raw data in r before substituting and graphing with v(v1)
+# TODO: 
 #       implement HDF5 file reader
 #       implement Python program output as transcript
 #       implement save-all as ascii
@@ -465,6 +465,8 @@ class CommandInterp:
       return message
 
   def setPostParameter(self, arg):
+    if (self.setPostFlag(arg) == True):
+      return
     regexSet= re.match(r'^(xname|title|xl|yl|graphdev|imgdev) (.*)', arg)
     if regexSet is not None:
       setcmd= regexSet.group(1)
@@ -546,12 +548,34 @@ class CommandInterp:
           else:
             print "Need to set active graph to " + str(setarg)
           self.graphs.setActive(setarg)
-          self.setGraphicsActiveDelegate(self.graphs.getActiveCanvas())      
+          self.setGraphicsActiveDelegate(self.graphs.getActiveCanvas())
 
       else:
         message = "Unrecognized set command: " + setcmd
     else:
       message= "Unrecognized setting: " + arg
+      
+  def setPostFlag(self, arg):
+    regexSet= re.match(r'^(xlog|xlin|ylog|ylin)$', arg)
+    if regexSet is not None:
+      setcmd= regexSet.group(1)
+      if setcmd == False:
+        return False
+      if setcmd == 'xlog':
+        print("Setting x-axis to log plot")
+        self.sc.set_xlog(True)
+      if setcmd == 'xlin':
+        print("Setting x-axis to log plot")
+        self.sc.set_xlog(False)
+      if setcmd == 'ylog':
+        print("Setting y-axis to log plot")
+        self.sc.set_ylog(True)
+      if setcmd == 'ylin':
+        print("Setting y-axis to log plot")
+        self.sc.set_ylog(False)        
+      return True
+    return False
+    
 
   def setGraphicsActiveDelegate(self, sc):
     self.sc= sc
