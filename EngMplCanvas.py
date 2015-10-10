@@ -117,22 +117,23 @@ class EngMplCanvas(FigureCanvas):
     
   def plotXYLinLog(self, x, y):
     if self.xlog and self.ylog:
-      self.plt.loglog(x, y, picker=5)
+      if (self.logRangeOk(x) and self.logRangeOk(y)):
+        self.plt.loglog(x, y, picker=5)
     elif self.xlog:
-      self.plt.semilogx(x, y, picker=5)
+      if self.logRangeOk(x):
+        self.plt.semilogx(x, y, picker=5)
     elif self.ylog:
-      self.plt.semilogy(x, y, picker=5)
+      if self.logRangeOk(y):
+        self.plt.semilogy(x, y, picker=5)
     else:
       self.plt.plot(x, y, picker=5)
-        
-    if self.xlog:
-      self.plt.xaxis.set_scale('log')
+      
+  def logRangeOk(self, u):
+    if (any(u <= 0.0)):
+      print("Can't plot negative numbers in log scale.")
+      return False
     else:
-      self.plt.xaxis.set_scale('linear')
-    if self.ylog:
-      self.plt.yaxis.set_scale('log')
-    else:
-      self.plt.yaxis.set_scale('linear')     
+      return True
 
   def setAutoscale(self):
     if self.yauto:

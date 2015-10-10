@@ -151,7 +151,17 @@ class CommandInterp:
     if not self.sc.yauto:
       yLimitsMessage= str(self.sc.get_ylimlow()) + " " + str(self.sc.get_ylimhigh())
     message += "\n  Y Limits: " + yLimitsMessage
-
+    
+    if self.sc.xlog:
+      message += "\n  X axis is logarithmic"
+    else:
+      message += "\n  X axis is linear"
+      
+    if self.sc.ylog:
+      message += "\n  Y axis is logarithmic"
+    else:
+      message += "\n  Y axis is linear"
+      
     currentCanvasName= self.sc.get_name()
     message += "\n  Current graph name: " + str(currentCanvasName)
 
@@ -565,13 +575,13 @@ class CommandInterp:
         print("Setting x-axis to log plot")
         self.sc.set_xlog(True)
       if setcmd == 'xlin':
-        print("Setting x-axis to log plot")
+        print("Setting x-axis to linear plot")
         self.sc.set_xlog(False)
       if setcmd == 'ylog':
         print("Setting y-axis to log plot")
         self.sc.set_ylog(True)
       if setcmd == 'ylin':
-        print("Setting y-axis to log plot")
+        print("Setting y-axis to linear plot")
         self.sc.set_ylog(False)        
       return True
     return False
