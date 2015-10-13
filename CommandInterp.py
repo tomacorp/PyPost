@@ -198,11 +198,11 @@ class CommandInterp:
     self.pyCode= ''
     message= ''
     if cmd == 'si':
-      self.pyCode= "sim.setCircuitName(" + str(arg) + ")\nsim.simulate()"
+      self.pyCode= '''sim.setCircuitName("''' + str(arg) + '''")\nsim.simulate()'''
       message= self.setCircuitName(arg)
       message= message + "\n" + self.simulate(arg)
     elif cmd == 'ci':
-      self.pyCode= "sim.setCircuitName(" + str(arg) + ")"
+      self.pyCode= '''sim.setCircuitName("''' + str(arg) + '''")'''
       message= self.setCircuitName(arg)
       self.readRawFile()
     elif cmd == 'gr':
