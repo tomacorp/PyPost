@@ -1,27 +1,23 @@
-ngspice -r ngtest.raw -b ngtest.cki
-pip install fysom
-pip install cx_freeze
+TODO: Add complex numbers to PyPost.py
 
-Tried
-cxfreeze MainWindow.py --target-dir dist
-but this errored out 
-IOError: [Errno 2] No such file or directory: '/Users/toma/Library/Enthought/Canopy_64bit/User/lib/Python'
+Usage: ngspice [OPTION]... [FILE]...
+Simulate the electical circuits in FILE.
 
-There is a python in
-/Users/toma/Library/Enthought/Canopy_64bit/User/bin
+  -a  --autorun             run the loaded netlist
+  -b, --batch               process FILE in batch mode
+  -c, --circuitfile=FILE    set the circuitfile
+  -i, --interactive         run in interactive mode
+  -n, --no-spiceinit        don't load the local or user's config file
+  -o, --output=FILE         set the outputfile
+  -p, --pipe                run in I/O pipe mode
+  -q, --completion          activate command completion
+  -r, --rawfile=FILE        set the rawfile output
+      --soa-log=FILE        set the outputfile for SOA warnings
+  -s, --server              run spice as a server process
+  -t, --term=TERM           set the terminal type
+  -h, --help                display this help and exit
+  -v, --version             output version information and exit
 
-Put cx_freeze in other python:
-/Users/toma/python278i/bin
-pip install cx_Freeze
-
-To work with github:
-# Send the latest to github
-git push origin master
-# Get the latest from github:
-git pull origin master
-
-# When updating for pil, it pulled python 2.7.10 and needed new pyside and matplotlib.
-conda install pil
-conda install pyside
-conda install matplotlib
-conda install twisted
+To get ascii output, set environment variable:
+export SPICE_ASCIIRAWFILE=1
+ngspice -b -r spice2_ac.raw -b spice2_ac.cki
