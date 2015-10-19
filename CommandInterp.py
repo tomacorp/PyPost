@@ -2,6 +2,9 @@ import os.path
 import PySide.QtCore
 from PySide.QtCore import QProcess, QObject, SIGNAL
 
+import sys
+from sys import platform as _platform
+
 from math import *
 from tokenize import *
 from numpy import *
@@ -395,7 +398,16 @@ class CommandInterp:
       message= "Run simulator on " + self.spiceFileName + " to produce " + self.rawFileName
       self.process= QProcess()
       self.process.connect(self.process, SIGNAL("finished(int)"), self.processCompleted)
-      self.process.start('/usr/local/bin/ngspice -r ' + self.rawFileName + ' -b ' + self.spiceFileName)
+      
+      if _platform == "linux" or _platform == "linux2":
+        self.process.start('/usr/bin/ngspice -r ' + self.rawFileName + ' -b ' + self.spiceFileName)
+      elif _platform == "darwin":
+        # MAC OS X
+        self.process.start('/usr/local/bin/ngspice -r ' + self.rawFileName + ' -b ' + self.spiceFileName)
+      elif _platform == "win32":
+        # Windows
+        pass
+
     else:
       message= "No simulation specified"
     return message

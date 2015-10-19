@@ -215,6 +215,24 @@ conda install matplotlib
 pip install fysom
 ```
 
+### Installing Conda and the modules on Ubuntu
+
+```bash
+conda remove pyqt
+conda install pyside
+conda install matplotlib
+conda install anaconda-client
+conda install -c auto fysom
+```
+Next make a virtual conda environment for PyPost
+
+conda create -n pypostenv scipy pandas numpy 
+conda install -n pypostenv PySide
+conda install -n pypostenv matplotlib
+conda install -n pypostenv scikit-image
+conda install -n pypostenv h5py
+conda install -n pypostenv -c auto fysom
+
 ### List the available virtual environments
 ```bash
 conda env list
@@ -225,8 +243,13 @@ conda env list
 source activate pypostenv
 ```
 
+### Run in the virtual environment
+```bash
+python ~/shared/PyPost/PyPost/PyPost.py
+```
+
 ### Running outside of the virtual environment
 
 ```bash
-~/anaconda/envs/pypostenv/bin/python ~/Developer/Python/PyPost/MainWindow.py
+~/shared/PyPost/PyPost/pypostenv/bin/python ~/shared/PyPost/PyPost/PyPost.py
 ```

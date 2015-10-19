@@ -4,6 +4,8 @@ from __future__ import unicode_literals
 from future_builtins import *
 
 import sys
+from sys import platform as _platform
+
 from numpy import *
 from collections import deque
 
@@ -15,7 +17,18 @@ from PySide.QtGui import (QApplication, QDialog, QLineEdit, QTextBrowser,
                           QToolBar, QMenuBar, QMenu, QAction, QMainWindow, QWidget)
 
 import matplotlib
-matplotlib.rcParams['backend.qt4']='PySide'
+
+
+if _platform == "linux" or _platform == "linux2":
+  matplotlib.rcParams['backend.qt4']='PySide'
+  matplotlib.rcParams['backend'] = 'Qt4Agg'
+elif _platform == "darwin":
+  # MAC OS X
+  matplotlib.rcParams['backend.qt4']='PySide'
+elif _platform == "win32":
+  # Windows
+  pass
+
 # from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
