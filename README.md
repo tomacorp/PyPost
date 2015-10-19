@@ -198,9 +198,6 @@ Install conda from http://continuum.io/downloads
 
 ```bash
 virtualenv pypostenv
-cd ~/Developer/Python
-git clone https://github.com/tomacorp/PyPost.git
-cd PyPost
 ```
 
 ### Install the Python modules
@@ -238,6 +235,12 @@ conda install -n pypostenv -c auto fysom
 conda env list
 ```
 
+### Install the PyPost python spice post processor
+mkdir -p ~/Developer/Python
+cd ~/Developer/Python
+git clone https://github.com/tomacorp/PyPost.git
+cd PyPost
+
 ### Use the virtual environment for this project
 ```bash
 source activate pypostenv
@@ -253,3 +256,23 @@ python ~/shared/PyPost/PyPost/PyPost.py
 ```bash
 ~/shared/PyPost/PyPost/pypostenv/bin/python ~/shared/PyPost/PyPost/PyPost.py
 ```
+
+### Capture a snapshot of the virtual environment
+```bash
+conda list -e > requirements.txt
+```
+Have to remove fysom from the requirements.txt, since it comes from an
+external server.
+
+### Create a new virtual environment with
+conda create -n pypostenv2 --file requirements.txt
+conda install -n pypostenv2 -c auto fysom
+
+# List conda virtual environments with
+conda info -e
+
+# Select a virtual environment with
+source activate pypostenv2
+
+# Remove a conda virtual environment with
+conda remove -n pypostenv
