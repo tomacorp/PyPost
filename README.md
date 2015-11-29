@@ -2,7 +2,7 @@
 
 **Graph and post process simulator data**
 
-PyPost is intended to be a replacement for Nutmeg, which is the post processor for data created by NGSpice and other circuit simulators. The advantage of this program is that it uses Qt and does not require X-Windows. It is written in Python and uses matplotlib. A Python REPL loop is the expression evaluator. This brings in a large number of commands from Python, Numpy, and other modules.
+PyPost is a replacement for NGNutmeg, which is the post processor for data created by NGSpice and other circuit simulators. The advantage of this program is that it uses Qt and does not require X-Windows. It is written in Python and uses matplotlib. A Python REPL loop is the expression evaluator. This brings in a large number of commands from Python, Numpy, and other modules.
 
 PyPost is an iPython alternative designed for engineers working with simulators. If you are not interacting with a circuit simulator, you should probably use iPython instead.
 
