@@ -9,7 +9,7 @@ from collections import deque
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import (QApplication, QDialog, QLineEdit, QTextBrowser,
-                          QVBoxLayout, QHBoxLayout, QSizePolicy,
+                             QVBoxLayout, QHBoxLayout, QSizePolicy,
                           QToolBar, QMenuBar, QMenu, QAction, QMainWindow, QWidget)
 from PyQt5.QtGui import QKeySequence
 
@@ -112,193 +112,193 @@ import ImgMplCanvas
 
 
 class Post(QMainWindow):
-  def __init__(self, parent=None):
-    super(Post, self).__init__(parent)
+    def __init__(self, parent=None):
+        super(Post, self).__init__(parent)
 
-    self.graphs= MplCanvasDict.MplCanvasDict()
+        self.graphs= MplCanvasDict.MplCanvasDict()
 
-    self.table = MainWin(self)
-    self.setCentralWidget(self.table)
+        self.table = MainWin(self)
+        self.setCentralWidget(self.table)
 
-    self.createActions()
-    self.createMenus()
+        self.createActions()
+        self.createMenus()
 
-    self.setWindowTitle('PyPost')
+        self.setWindowTitle('PyPost')
 
-    self.resize(1200, 420)
-    self.statusBar().showMessage('Ready')
+        self.resize(1200, 420)
+        self.statusBar().showMessage('Ready')
 
-  def newFile(self):
-    self.statusBar().showMessage("Invoked File|New")
-    print("Invoked File|New")
+    def newFile(self):
+        self.statusBar().showMessage("Invoked File|New")
+        print("Invoked File|New")
 
-  def open_(self):
-    self.statusBar().showMessage("Invoked File|Open")
-    print("Invoked File|Open")
+    def open_(self):
+        self.statusBar().showMessage("Invoked File|Open")
+        print("Invoked File|Open")
 
-  def save(self):
-    self.statusBar().showMessage("Invoked File|Save")
-    print("Invoked File|Save")
+    def save(self):
+        self.statusBar().showMessage("Invoked File|Save")
+        print("Invoked File|Save")
 
-  def print_(self):
-    self.statusBar().showMessage("Invoked File|Print")
-    print("Invoked File|Print")
+    def print_(self):
+        self.statusBar().showMessage("Invoked File|Print")
+        print("Invoked File|Print")
 
-  def about(self):
-    #self.statusBar().showMessage("Invoked Help|About")
-    #print("Invoked Help|About")
-    QtGui.QMessageBox.about(self, "About PyPost",
-                                  "<b>PyPost</b> is an interactive dataset visualizer " +
+    def about(self):
+        #self.statusBar().showMessage("Invoked Help|About")
+        #print("Invoked Help|About")
+        QtGui.QMessageBox.about(self, "About PyPost",
+                            "<b>PyPost</b> is an interactive dataset visualizer " +
                                   "for electronic and thermal engineering.")
 
-  def aboutQt(self):
-    print("Invoked <b>Help|About Qt</b>")
+    def aboutQt(self):
+        print("Invoked <b>Help|About Qt</b>")
 
-  def prev(self):
-    self.table.lineedit.historyUp()
+    def prev(self):
+        self.table.lineedit.historyUp()
 
-  def next_(self):
-    self.table.lineedit.historyDown()
+    def next_(self):
+        self.table.lineedit.historyDown()
 
-  def createGraph(self):
-    canvasName= self.graphs.create()
-    self.graphs.setActive(canvasName)
-    graph= self.graphs.getActiveCanvas()
-    graph.setWindowTitle(canvasName)
-    graph.show()
-    graph.activateWindow()
-    graph.raise_()
-    graph.setCommandDelegate(self.table.commandInterp)
-    self.table.commandInterp.setGraphicsActiveDelegate(graph)
-    self.statusBar().showMessage("Created graph " + canvasName)
+    def createGraph(self):
+        canvasName= self.graphs.create()
+        self.graphs.setActive(canvasName)
+        graph= self.graphs.getActiveCanvas()
+        graph.setWindowTitle(canvasName)
+        graph.show()
+        graph.activateWindow()
+        graph.raise_()
+        graph.setCommandDelegate(self.table.commandInterp)
+        self.table.commandInterp.setGraphicsActiveDelegate(graph)
+        self.statusBar().showMessage("Created graph " + canvasName)
 
-  def createMenus(self):
-    menubar= self.menuBar()
+    def createMenus(self):
+        menubar= self.menuBar()
 
-    self.fileMenu = menubar.addMenu("File")
-    self.fileMenu.addAction(self.newAct)
-    self.fileMenu.addAction(self.openAct)
-    self.fileMenu.addAction(self.saveAct)
-    self.fileMenu.addSeparator()
-    self.fileMenu.addAction(self.printAct)
+        self.fileMenu = menubar.addMenu("File")
+        self.fileMenu.addAction(self.newAct)
+        self.fileMenu.addAction(self.openAct)
+        self.fileMenu.addAction(self.saveAct)
+        self.fileMenu.addSeparator()
+        self.fileMenu.addAction(self.printAct)
 
-    # FIXME: TODO: Looks like a bug in PySide:
-    # One of the next two lines needs to be present in order for the
-    # Help menu to show up.
-    # Also, there is an unexpected search box in the help.
-    # It looks like there is some interference from OSX.
+        # FIXME: TODO: Looks like a bug in PySide:
+        # One of the next two lines needs to be present in order for the
+        # Help menu to show up.
+        # Also, there is an unexpected search box in the help.
+        # It looks like there is some interference from OSX.
 
-    self.fileMenu.addAction(self.aboutAct)
-    # self.fileMenu.addAction(self.aboutQtAct)
+        self.fileMenu.addAction(self.aboutAct)
+        # self.fileMenu.addAction(self.aboutQtAct)
 
-    self.cmdMenu = menubar.addMenu("Command")
-    self.cmdMenu.addAction(self.previousAct)
-    self.cmdMenu.addAction(self.nextAct)
+        self.cmdMenu = menubar.addMenu("Command")
+        self.cmdMenu.addAction(self.previousAct)
+        self.cmdMenu.addAction(self.nextAct)
 
-    self.cmdGraph = menubar.addMenu("Graph")
-    self.cmdGraph.addAction(self.createGraphAct)
+        self.cmdGraph = menubar.addMenu("Graph")
+        self.cmdGraph.addAction(self.createGraphAct)
 
-    self.helpMenu = menubar.addMenu("&Help")
-    self.helpMenu.addAction(self.aboutAct)
-    # self.helpMenu.addAction(self.aboutQtAct)
+        self.helpMenu = menubar.addMenu("&Help")
+        self.helpMenu.addAction(self.aboutAct)
+        # self.helpMenu.addAction(self.aboutQtAct)
 
-  def createActions(self):
-    self.newAct = QAction("&New", self,
-                                shortcut=QtGui.QKeySequence.New,
+    def createActions(self):
+        self.newAct = QAction("&New", self,
+                          shortcut=QtGui.QKeySequence.New,
                                 statusTip="Create a new file", triggered=self.newFile)
 
-    self.openAct = QAction("&Open...", self,
-                                 shortcut=QtGui.QKeySequence.Open,
+        self.openAct = QAction("&Open...", self,
+                           shortcut=QtGui.QKeySequence.Open,
                                  statusTip="Open an existing file", triggered=self.open_)
 
-    self.saveAct = QAction("&Save", self,
-                                 shortcut=QtGui.QKeySequence.Save,
+        self.saveAct = QAction("&Save", self,
+                           shortcut=QtGui.QKeySequence.Save,
                                  statusTip="Save the document to disk", triggered=self.save)
 
-    self.printAct = QAction("&Print...", self,
-                                  shortcut=QtGui.QKeySequence.Print,
+        self.printAct = QAction("&Print...", self,
+                            shortcut=QtGui.QKeySequence.Print,
                                   statusTip="Print the document", triggered=self.print_)
 
-    self.aboutAct = QAction("About", self,
-                                  statusTip="About PyPost", triggered=self.about)
+        self.aboutAct = QAction("About", self,
+                            statusTip="About PyPost", triggered=self.about)
 
-    #self.aboutQtAct = QAction("About &Qt", self,
-    #                                statusTip="Show the Qt library's About box",
-    #                               triggered=self.aboutQt)
-    # self.aboutQtAct.triggered.connect(QtGui.qApp.aboutQt)
+        #self.aboutQtAct = QAction("About &Qt", self,
+        #                                statusTip="Show the Qt library's About box",
+        #                               triggered=self.aboutQt)
+        # self.aboutQtAct.triggered.connect(QtGui.qApp.aboutQt)
 
-    self.previousAct = QAction("Previous", self,
-                                     shortcut=QtGui.QKeySequence.NextChild,
+        self.previousAct = QAction("Previous", self,
+                               shortcut=QtGui.QKeySequence.NextChild,
                                      statusTip="Previous Command", triggered=self.prev)
 
-    self.nextAct = QAction("Next", self,
-                                     shortcut=QtGui.QKeySequence.PreviousChild,
+        self.nextAct = QAction("Next", self,
+                           shortcut=QtGui.QKeySequence.PreviousChild,
                                      statusTip="Next Command", triggered=self.next_)
 
-    self.createGraphAct = QAction("Create", self,
-                                 shortcut=QtGui.QKeySequence.New,
+        self.createGraphAct = QAction("Create", self,
+                                  shortcut=QtGui.QKeySequence.New,
                                  statusTip="Create Graph", triggered=self.createGraph)
 
 class MainWin(QWidget):
-  """
-  Show a transcript, a command line, and a graphing canvas in one window.
-  """
-  def __init__(self, mainWindow):
-    super(MainWin, self).__init__()
+    """
+    Show a transcript, a command line, and a graphing canvas in one window.
+    """
+    def __init__(self, mainWindow):
+        super(MainWin, self).__init__()
 
-    self.resize(720, 320)
-    self.browser = QTextBrowser()
+        self.resize(720, 320)
+        self.browser = QTextBrowser()
 
-    canvasName= mainWindow.graphs.create()
-    mainWindow.graphs.setActive(canvasName)
-    self.sc= mainWindow.graphs.getActiveCanvas()
+        canvasName= mainWindow.graphs.create()
+        mainWindow.graphs.setActive(canvasName)
+        self.sc= mainWindow.graphs.getActiveCanvas()
 
-    self.lineedit = LineEditHist.lineEditHist("")
-    self.lineedit.selectAll()
+        self.lineedit = LineEditHist.lineEditHist("")
+        self.lineedit.selectAll()
 
-    self.topLayout = QHBoxLayout()
-    self.topLayout.addWidget(self.browser)
-    self.topLayout.addWidget(self.sc)
+        self.topLayout = QHBoxLayout()
+        self.topLayout.addWidget(self.browser)
+        self.topLayout.addWidget(self.sc)
 
-    layout = QVBoxLayout()
-    layout.addLayout(self.topLayout)
-    layout.addWidget(self.lineedit)
+        layout = QVBoxLayout()
+        layout.addLayout(self.topLayout)
+        layout.addWidget(self.lineedit)
 
-    self.setLayout(layout)
-    self.lineedit.setFocus()
-    self.lineedit.returnPressed.connect(self.updateUi)
+        self.setLayout(layout)
+        self.lineedit.setFocus()
+        self.lineedit.returnPressed.connect(self.updateUi)
 
-    self.commandInterp= CommandInterp.CommandInterp()
-    self.commandInterp.setGraphicsActiveDelegate(self.sc)
-    self.commandInterp.setGraphicsWindowsDelegate(mainWindow.graphs)
-    self.sc.setCommandDelegate(self.commandInterp)
+        self.commandInterp= CommandInterp.CommandInterp()
+        self.commandInterp.setGraphicsActiveDelegate(self.sc)
+        self.commandInterp.setGraphicsWindowsDelegate(mainWindow.graphs)
+        self.sc.setCommandDelegate(self.commandInterp)
 
-    self.setWindowTitle("PyPost")
+        self.setWindowTitle("PyPost")
 
-    self.show()
-    self.activateWindow()
-    self.raise_()
+        self.show()
+        self.activateWindow()
+        self.raise_()
 
-  def updateUi(self):
-    cmdText = unicode(self.lineedit.text())
-    self.lineedit.history.append('')
+    def updateUi(self):
+        cmdText = unicode(self.lineedit.text())
+        self.lineedit.history.append('')
 
-    message= self.commandInterp.executeCmd(cmdText)
-    pyCode= self.commandInterp.pyCode;
-    print("cmdText: " + cmdText + "\nPython code: " + str(pyCode))
-    self.lineedit.addCommandToDB(cmdText, pyCode)
+        message= self.commandInterp.executeCmd(cmdText)
+        pyCode= self.commandInterp.pyCode;
+        print("cmdText: " + cmdText + "\nPython code: " + str(pyCode))
+        self.lineedit.addCommandToDB(cmdText, pyCode)
 
-    self.browser.append(message)
-    self.lineedit.clear()
-    self.lineedit.resetHistoryPosition()
+        self.browser.append(message)
+        self.lineedit.clear()
+        self.lineedit.resetHistoryPosition()
 
-    # self.mainWindow.statusBar().showMessage('Next')
+        # self.mainWindow.statusBar().showMessage('Next')
 
 if __name__ == "__main__":
 
-  app = QApplication(sys.argv)
+    app = QApplication(sys.argv)
 
-  main = Post()
-  main.show()
+    main = Post()
+    main.show()
 
-  sys.exit(app.exec_())
+    sys.exit(app.exec_())
