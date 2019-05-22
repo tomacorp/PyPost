@@ -397,7 +397,6 @@ class CommandInterp:
         if self.spiceFileName != '':
             message= "Run simulator on " + self.spiceFileName + " to produce " + self.rawFileName
             self.process= QProcess()
-            # self.process.connect(self.process, pyqtSignal("finished(int)"), self.processCompleted)
             self.process.finished.connect(self.processCompleted)
 
             if _platform == "linux" or _platform == "linux2":
