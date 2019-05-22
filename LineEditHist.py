@@ -1,7 +1,16 @@
 from collections import deque
+
+from PyQt5 import QtCore, QtGui
+from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtWidgets import QLineEdit
+from PyQt5.QtGui import QKeySequence
+
+"""
 from PySide.QtCore import Qt
 from PySide.QtCore import Signal
 from PySide.QtGui import (QLineEdit, QKeySequence)
+"""
+
 import sqlite3
 import os.path
 
@@ -25,7 +34,7 @@ class lineEditHist(QLineEdit):
     elif key == Qt.Key_Down:
       self.historyDown()
     else:
-      cmd= unicode(self.text())
+      cmd= self.text()
       self.history[-1] = cmd
 
     # print("Key pressed" + str(evt.key()))
@@ -52,7 +61,7 @@ class lineEditHist(QLineEdit):
     sql = """SELECT rowid, cmd FROM CmdHistory ORDER BY rowid DESC LIMIT ?"""
     c = self.conn.cursor()
     for row in c.execute(sql, 3):
-      print str(row)
+      print(str(row))
 
   def loadHistoryDB(self):
     sql = """SELECT cmd FROM CmdHistory ORDER BY rowid"""
@@ -61,7 +70,7 @@ class lineEditHist(QLineEdit):
       self.history.append(row[0])
 
   def addCommandToDB(self, cmd, pycmd):
-    # print "Add command to db"
+    # print("Add command to db")
     sql= """INSERT INTO CmdHistory(cmd, pycmd) VALUES(?, ?)"""
     c = self.conn.cursor()
     c.execute(sql, (cmd,pycmd))

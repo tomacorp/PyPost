@@ -1,5 +1,5 @@
 from tokenize import *
-from cStringIO import StringIO
+from io import StringIO
 import re
 import sys
 from math import *
@@ -28,7 +28,7 @@ class EngEvaluate():
     return message
 
   def err_handler(self, type, flag):
-    print "Floating point error (%s), with flag %s" % (type, flag)
+    print("Floating point error (%s), with flag %s" % (type, flag))
 
   def runEval(self, cmdText, varName, rhs):
     """runEval() does the eval and returns the result,
@@ -127,7 +127,7 @@ class EngEvaluate():
           deEngExpr= deEngExpr + tokval
         lastToknum= toknum
     except:
-      print "Could not parse " + txtEng
+      print("Could not parse " + txtEng)
     if self.debug:
       print("Translated: " + deEngExpr)
     return deEngExpr
@@ -140,7 +140,7 @@ class EngEvaluate():
       for toknum, tokval, _, _, _  in g:
         print(str(toknum) + ' ' + str(tokval))
     except:
-      print "Could not parse " + txtEng
+      print("Could not parse " + txtEng)
 
   """This routine substitutes a Numpy array for Python array.
     For example:
@@ -193,7 +193,7 @@ class EngEvaluate():
           inNumpyVar= False
           pyExpr = pyExpr + tokval
     except:
-      print "Could not parse " + txtEng
+      print("Could not parse " + txtEng)
     if self.debug:
       print("Vector expr:" + str(pyExpr))
     return pyExpr

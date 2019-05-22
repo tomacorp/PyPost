@@ -1,18 +1,23 @@
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-from future_builtins import *
+
 
 import sys
 from numpy import *
 from collections import deque
 
-from PySide import QtCore, QtGui
+from PyQt5 import QtCore, QtGui
+from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtWidgets import (QApplication, QDialog, QLineEdit, QTextBrowser,
+                          QVBoxLayout, QHBoxLayout, QSizePolicy,
+                          QToolBar, QMenuBar, QMenu, QAction, QMainWindow, QWidget)
+from PyQt5.QtGui import QKeySequence
+
+"""from PySide import QtCore, QtGui
 from PySide.QtCore import Qt
 from PySide.QtCore import Signal
 from PySide.QtGui import (QApplication, QDialog, QLineEdit, QTextBrowser,
                           QVBoxLayout, QHBoxLayout, QKeySequence, QSizePolicy,
                           QToolBar, QMenuBar, QMenu, QAction, QMainWindow, QWidget)
+                          """
 
 import matplotlib
 matplotlib.rcParams['backend.qt4']='PySide'

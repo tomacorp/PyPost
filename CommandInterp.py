@@ -1,6 +1,6 @@
 import os.path
-import PySide.QtCore
-from PySide.QtCore import QProcess, QObject, SIGNAL
+import PyQt5.QtCore
+from PyQt5.QtCore import QProcess, QObject, pyqtSignal
 
 import sys
 from sys import platform as _platform
@@ -128,10 +128,10 @@ class CommandInterp:
       self.pyCode= "print(r.getVoltageNames())\nprint(r.getCurrentNames())"
 
     elif cmd == 'history':
-      print "History not implemented yet."
+      print("History not implemented yet.")
       
     elif cmd == 'autoscale':
-      print "Autoscale last curve on this graph"
+      print("Autoscale last curve on this graph")
       self.sc.setAutoscale()
       self.sc.plt.hold(False)
       if (self.lastGraphCommand1 != ""):
@@ -209,7 +209,7 @@ class CommandInterp:
       message= self.setCircuitName(arg)
       self.readRawFile()
     elif cmd == 'gr':
-      self.sc.plt.hold(False)
+      # self.sc.plt.hold(False) 
       message= self.graphExpr(arg, cmdText)
       if message == '':
         self.pyCode= "graph.graph("+ self.evaluator.logPyCode + ")"
@@ -232,7 +232,7 @@ class CommandInterp:
       self.setPostParameter(arg)
       # self.pyCode= "graph.set(" + arg + ")"
     elif cmd == 'history':
-      print "History not implemented yet."
+      print("History not implemented yet.")
     elif cmd == 'readh5':
       print("Read hdf5 file: " + arg)
       if os.path.isfile(arg):
@@ -251,7 +251,7 @@ class CommandInterp:
         print(message)
         self.pyCode= "# " + message
     elif cmd == 'delete':
-      print str(arg)
+      print(str(arg))
       self.graphs.remove(arg)
     elif cmd == 'img':
       canvasType= str(type(self.sc))
@@ -397,7 +397,7 @@ class CommandInterp:
     if self.spiceFileName != '':
       message= "Run simulator on " + self.spiceFileName + " to produce " + self.rawFileName
       self.process= QProcess()
-      self.process.connect(self.process, SIGNAL("finished(int)"), self.processCompleted)
+      self.process.connect(self.process, pyqtSignal("finished(int)"), self.processCompleted)
       
       if _platform == "linux" or _platform == "linux2":
         self.process.start('/usr/bin/ngspice -r ' + self.rawFileName + ' -b ' + self.spiceFileName)
@@ -414,12 +414,12 @@ class CommandInterp:
 
   def processCompleted(self):
     # self.ui.statusText.setText("Finished")
-    print "Finished simulating"
+    print("Finished simulating")
     self.readRawFile()
-    print "Finished reading raw file"
+    print("Finished reading raw file")
 
   def include(self, arg):
-    print "Include file: " + str(arg)
+    print("Include file: " + str(arg))
 
     if not os.path.isfile(arg):
       print("Include file " + str(arg) + " not found")
@@ -554,10 +554,10 @@ class CommandInterp:
         currentCanvasName= self.sc.get_name()
         if setarg != currentCanvasName:
           if setarg not in self.graphs.cd:
-            print "Need a new graph called " + str(setarg)
+            print("Need a new graph called " + str(setarg))
             self.graphs.create(canvasName=str(setarg))
           else:
-            print "Need to set active graph to " + str(setarg)
+            print("Need to set active graph to " + str(setarg))
           self.graphs.setActive(setarg)
           self.setGraphicsActiveDelegate(self.graphs.getActiveCanvas())
           
@@ -565,10 +565,10 @@ class CommandInterp:
         currentCanvasName= self.sc.get_name()
         if setarg != currentCanvasName:
           if setarg not in self.graphs.cd:
-            print "Need a new graph called " + str(setarg)
+            print("Need a new graph called " + str(setarg))
             self.graphs.createImg(canvasName=str(setarg))
           else:
-            print "Need to set active graph to " + str(setarg)
+            print("Need to set active graph to " + str(setarg))
           self.graphs.setActive(setarg)
           self.setGraphicsActiveDelegate(self.graphs.getActiveCanvas())
 

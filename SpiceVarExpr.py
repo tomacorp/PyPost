@@ -1,6 +1,6 @@
 from fysom import Fysom
-from tokenize import *
-from cStringIO import StringIO
+from tokenize import generate_tokens, NAME, NUMBER, OP, ENDMARKER
+from io import StringIO
 
 class SpiceVarExpr:
 
@@ -106,10 +106,10 @@ class SpiceVarExpr:
           else:
             return self.outExpr
       else:
-        print "Unexpected end of token parsing."
+        print("Unexpected end of token parsing.")
         return txt
     except:
-      print "Parsing failed"
+      print("Parsing failed")
       return txt
 
 if __name__ == "__main__":
@@ -119,32 +119,32 @@ if __name__ == "__main__":
 
   inputExpression= 'yellow[20 30]'
   outputExpression= sve.fixWaveFormVariableNames(inputExpression)
-  print "Input: " + inputExpression
-  print "Output: " + outputExpression
-  print "-----"
+  print("Input: " + inputExpression)
+  print("Output: " + outputExpression)
+  print("-----")
 
   inputExpression= 'v(1a)+2+v(v1)+av(v2)+vi(i)+i(i)'
   outputExpression= sve.fixWaveFormVariableNames(inputExpression)
-  print "Input: " + inputExpression
-  print "Output: " + outputExpression
-  print "-----"
+  print("Input: " + inputExpression)
+  print("Output: " + outputExpression)
+  print("-----")
 
   inputExpression= '3.04m+v1+v(a)+v(b)+i(r1)*10k'
   outputExpression= sve.fixWaveFormVariableNames(inputExpression)
-  print "Input: " + inputExpression
-  print "Output: " + outputExpression
+  print("Input: " + inputExpression)
+  print("Output: " + outputExpression)
 
   inputExpression= ')'
   outputExpression= sve.fixWaveFormVariableNames(inputExpression)
-  print "Input: " + inputExpression
-  print "Output: " + outputExpression
+  print("Input: " + inputExpression)
+  print("Output: " + outputExpression)
 
   inputExpression= 'v(x1.3)'
   outputExpression= sve.fixWaveFormVariableNames(inputExpression)
-  print "Input: " + inputExpression
-  print "Output: " + outputExpression
+  print("Input: " + inputExpression)
+  print("Output: " + outputExpression)
 
   inputExpression= 'i(l.x1.l1)'
   outputExpression= sve.fixWaveFormVariableNames(inputExpression)
-  print "Input: " + inputExpression
-  print "Output: " + outputExpression
+  print("Input: " + inputExpression)
+  print("Output: " + outputExpression)

@@ -1,7 +1,4 @@
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-from future_builtins import *
+
 
 import sys
 from sys import platform as _platform
@@ -9,16 +6,16 @@ from sys import platform as _platform
 from numpy import *
 from collections import deque
 
-from PySide import QtCore, QtGui
-from PySide.QtCore import Qt
-from PySide.QtCore import Signal
-from PySide.QtGui import (QApplication, QDialog, QLineEdit, QTextBrowser,
-                          QVBoxLayout, QHBoxLayout, QKeySequence, QSizePolicy,
+from PyQt5 import QtCore, QtGui
+from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtWidgets import (QApplication, QDialog, QLineEdit, QTextBrowser,
+                          QVBoxLayout, QHBoxLayout, QSizePolicy,
                           QToolBar, QMenuBar, QMenu, QAction, QMainWindow, QWidget)
+from PyQt5.QtGui import QKeySequence
 
 import matplotlib
 
-
+"""
 if _platform == "linux" or _platform == "linux2":
   matplotlib.rcParams['backend.qt4']='PySide'
   matplotlib.rcParams['backend'] = 'Qt4Agg'
@@ -28,6 +25,7 @@ elif _platform == "darwin":
 elif _platform == "win32":
   # Windows
   pass
+  """
 
 # from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -191,7 +189,7 @@ class Post(QMainWindow):
     # It looks like there is some interference from OSX.
 
     self.fileMenu.addAction(self.aboutAct)
-    self.fileMenu.addAction(self.aboutQtAct)
+    # self.fileMenu.addAction(self.aboutQtAct)
 
     self.cmdMenu = menubar.addMenu("Command")
     self.cmdMenu.addAction(self.previousAct)
@@ -202,42 +200,42 @@ class Post(QMainWindow):
 
     self.helpMenu = menubar.addMenu("&Help")
     self.helpMenu.addAction(self.aboutAct)
-    self.helpMenu.addAction(self.aboutQtAct)
+    # self.helpMenu.addAction(self.aboutQtAct)
 
   def createActions(self):
-    self.newAct = QtGui.QAction("&New", self,
+    self.newAct = QAction("&New", self,
                                 shortcut=QtGui.QKeySequence.New,
                                 statusTip="Create a new file", triggered=self.newFile)
 
-    self.openAct = QtGui.QAction("&Open...", self,
+    self.openAct = QAction("&Open...", self,
                                  shortcut=QtGui.QKeySequence.Open,
                                  statusTip="Open an existing file", triggered=self.open_)
 
-    self.saveAct = QtGui.QAction("&Save", self,
+    self.saveAct = QAction("&Save", self,
                                  shortcut=QtGui.QKeySequence.Save,
                                  statusTip="Save the document to disk", triggered=self.save)
 
-    self.printAct = QtGui.QAction("&Print...", self,
+    self.printAct = QAction("&Print...", self,
                                   shortcut=QtGui.QKeySequence.Print,
                                   statusTip="Print the document", triggered=self.print_)
 
-    self.aboutAct = QtGui.QAction("About", self,
+    self.aboutAct = QAction("About", self,
                                   statusTip="About PyPost", triggered=self.about)
 
-    self.aboutQtAct = QtGui.QAction("About &Qt", self,
-                                    statusTip="Show the Qt library's About box",
-                                    triggered=self.aboutQt)
-    self.aboutQtAct.triggered.connect(QtGui.qApp.aboutQt)
+    #self.aboutQtAct = QAction("About &Qt", self,
+    #                                statusTip="Show the Qt library's About box",
+    #                               triggered=self.aboutQt)
+    # self.aboutQtAct.triggered.connect(QtGui.qApp.aboutQt)
 
-    self.previousAct = QtGui.QAction("Previous", self,
+    self.previousAct = QAction("Previous", self,
                                      shortcut=QtGui.QKeySequence.NextChild,
                                      statusTip="Previous Command", triggered=self.prev)
 
-    self.nextAct = QtGui.QAction("Next", self,
+    self.nextAct = QAction("Next", self,
                                      shortcut=QtGui.QKeySequence.PreviousChild,
                                      statusTip="Next Command", triggered=self.next_)
 
-    self.createGraphAct = QtGui.QAction("Create", self,
+    self.createGraphAct = QAction("Create", self,
                                  shortcut=QtGui.QKeySequence.New,
                                  statusTip="Create Graph", triggered=self.createGraph)
 

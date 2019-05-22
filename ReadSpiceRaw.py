@@ -28,10 +28,10 @@ class spice_vector(object):
         if type(getattr(self,k)) == type(v):
           setattr(self,k,v)
         else:
-          print "Warning: attribute has wrong type: " \
-                + type(v) + " ignored!"
+          print("Warning: attribute has wrong type: " \
+                + type(v) + " ignored!")
       else:
-        print "Warning: unknown attribute" + k + " Ignored!"
+        print("Warning: unknown attribute" + k + " Ignored!")
 
   def set_data(self, data_array):
     """
@@ -88,10 +88,10 @@ class spice_plot(object):
         if type(getattr(self,k)) == type(v):
           setattr(self,k,v)
         else:
-          print "Warning: attribute has wrong type: " \
-                + type(v) + " ignored!"
+          print("Warning: attribute has wrong type: " \
+                + type(v) + " ignored!")
       else:
-        print "Warning: unknown attribute \"" + k + "\". Ignored!"
+        print("Warning: unknown attribute \"" + k + "\". Ignored!")
 
   def set_scalevector(self, spice_vector):
     """
@@ -166,10 +166,11 @@ class spice_read(object):
     f = open(filename, "rb")
     while (1):
       line = f.readline()
-      if line == "":   ## EOF
+      linestr = line.decode('utf-8')
+      if linestr == "":   ## EOF
         return
 
-      tok = [string.strip(t) for t in string.split(line,":",1)]
+      tok = [t.strip() for t in linestr.split(":",1)]
       keyword = tok[0].lower()  ## don't care the case of the keyword entry
 
       if keyword == "title":
@@ -179,7 +180,7 @@ class spice_read(object):
       elif keyword == "plotname":  ## FIXME: incomplete??
         self.current_plot.set_attributes(plotname=tok[1])
       elif keyword == "flags":
-        ftok= [string.lower(string.strip(t)) for t in string.split(tok[1])]
+        ftok= [t.lower().strip() for t in tok[1].split()]
         for flag in ftok:
           if flag == "real":
             self.real = True
@@ -190,41 +191,45 @@ class spice_read(object):
           elif flag == "padded":
             self.padded = True
           else:
-            print 'Warning: unknown flag: "' + f + '"'
+            print('Warning: unknown flag: "' + f + '"')
       elif keyword == "no. variables":
-        self.nvars = string.atoi(tok[1])
+        self.nvars = int(tok[1])
       elif keyword == "no. points":
-        self.npoints = string.atoi(tok[1])
+        self.npoints = int(tok[1])
       elif keyword == "dimensions":
         if self.npoints == 0:
-          print 'Error: misplaced "Dimensions:" lineprint'
+          print('Error: misplaced "Dimensions:" lineprint')
           continue
-        print 'Warning: "Dimensions" not supported yet'
+        print('Warning: "Dimensions" not supported yet')
         # FIXME: How can I create such simulation files?
-        # numdims = string.atoi(tok[1])
+        # numdims = int(tok[1])
       elif keyword == "command":
-        print 'Warning: "command" option not implemented yet'
-        print '\t' + line
+        print('Warning: "command" option not implemented yet')
+        print('\t' + line)
         # FIXME: what is this command good for
       elif keyword == "option":
-        print 'Warning: "command" option not implemented yet'
-        print '\t' + line
+        print('Warning: "command" option not implemented yet')
+        print('\t' + line)
         # FIXME: what is this command good for
       elif keyword == "variables":
-        for i in xrange(self.nvars):
-          line = string.split(string.strip(f.readline()))
+        for i in range(self.nvars):
+          line_bytes = f.readline()
+          linestr = line_bytes.decode('utf-8')          
+          line = linestr.split()
           if len(line) >= 3:
-            number = string.atoi(line[0])
-            curr_vector = spice_vector(name=line[1],
+            number = int(line[0])
+            var_name = line[1].replace('@', '')
+            var_name = var_name.replace('[i]', '')
+            curr_vector = spice_vector(name=var_name,
                                        type=line[2])
             self.vectors.append(curr_vector)
             if len(line) > 3:
-              # print "Attributes: ", line[3:]
+              # print("Attributes: ", line[3:])
               dummy =1
               ## min=, max, color, grid, plot, dim
               ## I think only dim is useful and neccesary
           else:
-            print "list of variables is to short"
+            print("list of variables is too short")
 
       elif keyword in ["values","binary"]:
         # read the data
@@ -233,11 +238,13 @@ class spice_read(object):
             i = 0
             a = numpy.zeros(self.npoints*self.nvars, dtype="float64")
             while (i < self.npoints*self.nvars):
-              t = string.split(f.readline(),"\t")
+              line_bytes = f.readline()
+              linestr = line_bytes.decode('utf-8')
+              t = linestr.split("\t")
               if len(t) < 2:
                 continue
               else:
-                a[i] = string.atof(t[1])
+                a[i] = float(t[1])
               i += 1
           else: ## keyword = "binary"
             a = numpy.frombuffer(f.read(self.nvars*self.npoints*8),
@@ -245,7 +252,7 @@ class spice_read(object):
           aa = a.reshape(self.npoints,self.nvars)
           self.vectors[0].set_data(aa[:,0])
           self.current_plot.set_scalevector(self.vectors[0])
-          for n in xrange(1,self.nvars):
+          for n in range(1,self.nvars):
             self.vectors[n].set_data(aa[:,n])
             self.current_plot.append_datavector(self.vectors[n])
 
@@ -254,7 +261,9 @@ class spice_read(object):
             i = 0
             a = numpy.zeros(self.npoints*self.nvars*2, dtype="float64")
             while (i < self.npoints*self.nvars*2):
-              t = string.split(f.readline(),"\t")
+              line_bytes = f.readline()
+              linestr = line.decode('utf-8')
+              t = linestr.split("\t")
               if len(t) < 2:  ## empty lines
                 continue
               else:
@@ -278,42 +287,42 @@ class spice_read(object):
         self.plots.append(self.current_plot)
         self.set_default_values()
 
-      elif string.strip(keyword) == "": ## ignore empty lines
+      elif keyword.strip() == "": ## ignore empty lines
         continue
 
       else:
-        print 'Error: strange line in rawfile:\n\t"'  \
-              +line + '"\n\t load aborted'
+        print('Error: strange line in rawfile:\n\t"'  \
+              + str(line) + '"\n\t load aborted')
         return 0
 
   def get_plots(self):
     return self.plots
 
   def dumpSpiceData(self, rawfn):
-    print 'The file: "' + rawfn + '" contains the following plots:'
+    print('The file: "' + rawfn + '" contains the following plots:')
     for i,p in enumerate(spice_read(rawfn).get_plots()):
-      print '  Plot', i, 'with the attributes'
-      print '    Title: ' , p.title
-      print '    Date: ', p.date
-      print '    Plotname: ', p.plotname
-      print '    Plottype: ' , p.plottype
+      print('  Plot', i, 'with the attributes')
+      print('    Title: ' , p.title)
+      print('    Date: ', p.date)
+      print('    Plotname: ', p.plotname)
+      print('    Plottype: ' , p.plottype)
 
       s = p.get_scalevector()
-      print '    The Scale vector has the following properties:'
-      print '      Name: ', s.name
-      print '      Type: ', s.type
+      print('    The Scale vector has the following properties:')
+      print('      Name: ', s.name)
+      print('      Type: ', s.type)
       v = s.get_data()
-      print '      Vector-Length: ', len(v)
-      print '      Vector-Type: ', v.dtype
+      print('      Vector-Length: ', len(v))
+      print('      Vector-Type: ', v.dtype)
 
       for j,d in enumerate(p.get_datavectors()):
-        print '    Data vector', j, 'has the following properties:'
-        print '      Name: ', d.name
-        print '      Type: ', d.type
+        print('    Data vector', j, 'has the following properties:')
+        print('      Name: ', d.name)
+        print('      Type: ', d.type)
         v = d.get_data()
-        print '      Vector-Length: ', len(v)
-        print '      Vector-Type: ', v.dtype
-        print str(v)
+        print('      Vector-Length: ', len(v))
+        print('      Vector-Type: ', v.dtype)
+        print(str(v))
 
   def loadSpiceVoltages(self):
     for i,p in enumerate(self.get_plots()):
@@ -322,21 +331,25 @@ class spice_read(object):
 
       for j,d in enumerate(p.get_datavectors()):
         v = d.get_data()
-        variableName= d.name
-        variableName= variableName.lower()
+        variableName = d.name
+        variableName = variableName.lower()
 
         voltageRE= re.match(r'[vV]\(([^\)]+)\)', variableName)
         if voltageRE:
-          varName= voltageRE.group(1)
+          varName = voltageRE.group(1)
           self.spiceVoltage[str(varName)]= v
           print("Loading spice voltage name: " + str(varName))
           continue
+        
+        if ("[i]" in variableName) and ('@' in variableName):
+          variableName = variableName.replace('[i]', '')
+          variableName = variableName.replace('@', '')
 
         currentRE= re.match(r'[iI]\(([^\)]+)\)', variableName)
         if currentRE:
-          varName= currentRE.group(1)
+          varName = currentRE.group(1)
           self.spiceCurrent[str(varName)]= v
-          continue
+          continue   
 
         currentREXyce= re.match(r'([^#]+)#branch$', variableName)
         if currentREXyce:
@@ -344,28 +357,28 @@ class spice_read(object):
           if ':' in varName:
             # print("Loading Xyce-style current name " + str(varName))
             subcktFields = varName.split(':')
-            endIdx= len(subcktFields) - 1
-            subcktFields[endIdx]= str(subcktFields[0]) + str(subcktFields[endIdx])
-            varName= '.'.join(subcktFields)
+            endIdx = len(subcktFields) - 1
+            subcktFields[endIdx] = str(subcktFields[0]) + str(subcktFields[endIdx])
+            varName = '.'.join(subcktFields)
             # print("Translated Xyce-style current name to " + str(varName))
-          self.spiceCurrent[str(varName)]= v
+          self.spiceCurrent[str(varName)] = v
           continue
 
         if ':' in variableName:
           varName= variableName.replace(':','.')
-          self.spiceVoltage[str(varName)]= v
+          self.spiceVoltage[str(varName)] = v
           continue
 
   def v(self, voltageName):
     if voltageName not in self.spiceVoltage:
-      print "Error: voltage " + str(voltageName) + " not found in raw file"
+      print("Error: voltage " + str(voltageName) + " not found in raw file")
       return ''
     else:
       return self.spiceVoltage[voltageName]
 
   def i(self, currentName):
     if currentName not in self.spiceCurrent:
-      print "Error: current " + str(currentName) + " not found in raw file"
+      print("Error: current " + str(currentName) + " not found in raw file")
       return ''
     else:
       return self.spiceCurrent[currentName]
@@ -392,13 +405,13 @@ if __name__ == "__main__":
     exit
   reader1.loadSpiceVoltages()
   r1v2= reader1.v('v2')
-  print str(r1v2)
+  print(str(r1v2))
   r1lin= reader1.i('lin')
-  print str(r1lin)
-  print "Voltages"
-  print reader1.getVoltageNames()
-  print "Currents"
-  print reader1.getCurrentNames()
+  print(str(r1lin))
+  print("Voltages")
+  print(reader1.getVoltageNames())
+  print("Currents")
+  print(reader1.getCurrentNames())
 
   reader2= spice_read('t/t1.raw')
   if reader2 is None:
@@ -406,34 +419,34 @@ if __name__ == "__main__":
     exit  
   reader2.loadSpiceVoltages()
   r2v2= reader2.v('3')
-  print str(r2v2)
+  print(str(r2v2))
   r2x1_3= reader2.v('x1.3')
-  print str(r2x1_3)
-  print "Voltages"
-  print reader2.getVoltageNames()
-  print "Currents"
-  print reader2.getCurrentNames()
+  print(str(r2x1_3))
+  print("Voltages")
+  print(reader2.getVoltageNames())
+  print("Currents")
+  print(reader2.getCurrentNames())
 
   print('Xyce example 1')
   reader3= spice_read('t/x1.raw')
   reader3.loadSpiceVoltages()
   r3v2= reader3.v('3')
-  print str(r3v2)
+  print(str(r3v2))
   r3x1_3= reader3.v('x1.3')
-  print str(r3x1_3)
-  print "Voltages"
-  print reader3.getVoltageNames()
-  print "Currents"
-  print reader3.getCurrentNames()
+  print(str(r3x1_3))
+  print("Voltages")
+  print(reader3.getVoltageNames())
+  print("Currents")
+  print(reader3.getCurrentNames())
 
   print('Xyce example 2')
   reader3= spice_read('t/xx1.raw')
   reader3.loadSpiceVoltages()
   r3v2= reader3.v('3')
-  print str(r3v2)
+  print(str(r3v2))
   r3x1_3= reader3.v('x1.3')
-  print str(r3x1_3)
-  print "Voltages"
-  print reader3.getVoltageNames()
-  print "Currents"
-  print reader3.getCurrentNames()
+  print(str(r3x1_3))
+  print("Voltages")
+  print(reader3.getVoltageNames())
+  print("Currents")
+  print(reader3.getCurrentNames())

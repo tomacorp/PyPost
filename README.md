@@ -221,14 +221,17 @@ conda install matplotlib
 conda install anaconda-client
 conda install -c auto fysom
 ```
+
 Next make a virtual conda environment for PyPost
 
+```bash
 conda create -n pypostenv scipy pandas numpy 
 conda install -n pypostenv PySide
 conda install -n pypostenv matplotlib
 conda install -n pypostenv scikit-image
 conda install -n pypostenv h5py
 conda install -n pypostenv -c auto fysom
+```
 
 ### List the available virtual environments
 ```bash
@@ -236,10 +239,12 @@ conda env list
 ```
 
 ### Install the PyPost python spice post processor
+```bash
 mkdir -p ~/Developer/Python
 cd ~/Developer/Python
 git clone https://github.com/tomacorp/PyPost.git
 cd PyPost
+```
 
 ### Use the virtual environment for this project
 ```bash
@@ -265,14 +270,22 @@ Have to remove fysom from the requirements.txt, since it comes from an
 external server.
 
 ### Create a new virtual environment with
+```bash
 conda create -n pypostenv2 --file requirements.txt
 conda install -n pypostenv2 -c auto fysom
+```
 
 # List conda virtual environments with
+```bash
 conda info -e
+```
 
 # Select a virtual environment with
+```bash
 source activate pypostenv2
+```
 
 # Remove a conda virtual environment with
+```bash
 conda remove -n pypostenv
+```
